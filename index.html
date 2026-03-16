@@ -380,7 +380,7 @@
         });
         const expBox = document.getElementById('explanation-container');
         if(isReviewMode) {
-            expBox.innerHTML = `<div class="explanation-box"><strong>הסבר מקצועי:</strong> ${q.explanation}${q.link ? `<br><br><a href="${q.link}" target="_blank" style="color:var(--sky-blue); font-weight:bold;">📖 להרחבת הידע לחץ כאן</a>` : ''}</div>`;
+            expBox.innerHTML = `<div class="explanation-box"><strong>הסבר מקצועי:</strong> ${q.explanation}${q.link ? `<br><br><a href="${q.link}" target="_blank" style="display:inline-block; margin-top:10px; padding:12px 25px; background:#d4edda; color:#1a6b35; border-radius:10px; font-weight:bold; font-size:1rem; text-decoration:none; border: 2px solid #a8d5b5;">📖 למידע נוסף לחץ</a>` : ''}</div>`;
             expBox.classList.remove('hidden');
             document.getElementById('btn-return-results').classList.remove('hidden');
         } else {
