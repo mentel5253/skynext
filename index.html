@@ -314,24 +314,42 @@ function shuffle(array) {
         }
         return array;
     }
- function startExam() {
-        // ערבוב השאלות
-        questions = shuffle([...rawQuestions]);
-        
-        // ערבוב התשובות בתוך כל שאלה ושמירת האינדקס הנכון
-        questions.forEach(q => {
-            const correctAnswerText = q.a[q.c]; // שומר את הטקסט של התשובה הנכונה
-            shuffle(q.a); // מערבב את התשובות
-            q.c = q.a.indexOf(correctAnswerText); // מעדכן את האינדקס של התשובה הנכונה למיקומה החדש
-        });
+async function startExam() {
+    const btn = document.querySelector("#page-instructions .btn-gold");
+    btn.innerText = "טוען שאלות...";
+    btn.disabled = true;
 
-        answers = new Array(questions.length).fill(null);
-        document.getElementById('page-instructions').classList.add('hidden');
-        document.getElementById('page-exam').classList.remove('hidden');
-        timerId = setInterval(updateTimer, 1000);
-        showQuestion();
+    try {
+        const response = await fetch(`${GOOGLE_URL}?action=getQuestions`);
+        const text = await response.text();
+        const data = JSON.parse(text);
+        
+        if (!data || data.length === 0) {
+            alert("שגיאה בטעינת השאלות. נסה שוב.");
+            btn.innerText = "הבנתי, התחל בבחינה";
+            btn.disabled = false;
+            return;
+        }
+        questions = shuffle(data);
+    } catch(e) {
+        alert("שגיאה בחיבור לשרת. נסה שוב.");
+        btn.innerText = "הבנתי, התחל בבחינה";
+        btn.disabled = false;
+        return;
     }
 
+    questions.forEach(q => {
+        const correctAnswerText = q.a[q.c];
+        shuffle(q.a);
+        q.c = q.a.indexOf(correctAnswerText);
+    });
+
+    answers = new Array(questions.length).fill(null);
+    document.getElementById('page-instructions').classList.add('hidden');
+    document.getElementById('page-exam').classList.remove('hidden');
+    timerId = setInterval(updateTimer, 1000);
+    showQuestion();
+}
     function updateTimer() {
         timeLeft--;
         let m = Math.floor(timeLeft/60), s = timeLeft%60;
