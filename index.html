@@ -111,9 +111,12 @@
 
         .drone-container { position: fixed; width: 180px; top: -250px; right: -300px; z-index: 2000; pointer-events: none; animation: droneFlyInAndLand 10s ease-in-out forwards; transition: all 2s ease-in-out; }
         .drone-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7)); }
-
+.propeller { 
+    position: absolute; width: 40px; height: 6px; 
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.45) 50%, rgba(255,255,255,0) 100%); 
+    border-radius: 40%; filter: blur(1px); animation: propellerSlowSpin 2s linear infinite; 
 }
-       
+     
    @keyframes droneFlyInAndLand { 
             0% { top: 150px; right: -300px; transform: rotate(15deg); } 
             40% { top: 150px; right: 65%; transform: translateX(50%) rotate(0deg); } 
