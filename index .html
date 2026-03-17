@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>SkyNext - מערכת הכנה למבחן רת"א | מוגן</title>
+    <style>
+        :root { 
+            --primary-gold: #122fec; 
+            --sky-blue: #637ef7; 
+            --bg-dark: #2d2d2d; 
+            --card-white: #ffffff; 
+            --header-height: 85px; 
+        }
+
+        html, body {
+            direction: rtl;
+            text-align: right;
+            background-color: var(--bg-dark);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-user-select: none; 
+            user-select: none;
+        }
+
+        .sky-header { 
+            position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
+            background-color: var(--sky-blue); color: white; display: flex; 
+            align-items: center; justify-content: space-between; padding: 0 25px; 
+            box-sizing: border-box; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); 
+        }
+
+        .header-logo { height: 65px; width: auto; }
+
+        #header-timer { 
+            font-size: 3.2rem; font-weight: 900;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #header-progress {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 10px;
+            min-width: 90px;
+            text-align: center;
+        }
+
+        .container { 
+            width: 95%; 
+            max-width: 750px; 
+            margin: calc(var(--header-height) + 30px) auto 60px; 
+            padding: 0 15px;
+            box-sizing: border-box;
+            display: block;
+        }
+
+        .card { 
+            background: var(--card-white); 
+            border-radius: 15px; 
+            padding: 40px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+            position: relative; 
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .hidden { display: none; }
+        .main-brand-logo { width: 320px; max-width: 90%; height: auto; margin: 0 auto 25px; display: block; }
+        
+        .login-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        input { 
+            width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; 
+            font-size: 1rem; box-sizing: border-box; text-align: right; 
+        }
+        .full-width { grid-column: span 2; }
+        .license-field { 
+            border: 2px solid var(--primary-gold) !important; background: #f5f7ff; 
+            font-weight: bold; text-align: center !important; letter-spacing: 2px; 
+        }
+
+        .progress-container { width: 100%; background-color: #eee; height: 12px; border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
+        .progress-bar { height: 100%; background-color: var(--primary-gold); width: 0%; transition: width 0.4s; }
+        .q-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 25px; line-height: 1.6; color: #333; }
+        
+        .opt-btn { 
+            width: 100%; padding: 18px; border: 2px solid #eee; border-radius: 12px; 
+            background: #fff; cursor: pointer; text-align: right; font-size: 1.15rem; 
+            margin-bottom: 12px; transition: 0.2s; 
+        }
+        .opt-btn.selected { background: #eff3ff; border-color: var(--sky-blue); font-weight: bold; }
+
+        .btn { padding: 16px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 1.15rem; width: 100%; text-align: center; }
+        .btn-gold { background: var(--primary-gold); color: white; }
+
+        .dots-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; justify-content: center; }
+        .dot { 
+            width: 32px; height: 32px; border-radius: 6px; background: #eee; 
+            display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; font-size: 0.8rem; transition: 0.2s;
+        }
+        .dot.answered { background: var(--sky-blue); color: white; }
+        .dot.active { outline: 3px solid #333; transform: scale(1.1); font-weight: bold; }
+
+        .explanation-box { background: #f0f3ff; border-right: 6px solid var(--primary-gold); padding: 20px; margin-top: 20px; border-radius: 8px; line-height: 1.6; }
+        .sky-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #1a1a1a; color: #aaa; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+
+        .drone-container { position: fixed; width: 180px; top: -250px; right: -300px; z-index: 2000; pointer-events: none; animation: droneFlyInAndLand 10s ease-in-out forwards; transition: all 2s ease-in-out; }
+        .drone-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7)); }
+        .propeller { 
+            position: absolute; width: 55px; height: 8px; 
+            background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%); 
+            border-radius: 40%; filter: blur(1px); animation: propellerSpinToStop 10s ease-out forwards; 
+        }
+        .p1 { top: 20%; left: 14%; } .p2 { top: 20%; right: 14%; } .p3 { bottom: 25%; left: 10%; } .p4 { bottom: 25%; right: 10%; }
+        @keyframes propellerSpinToStop { 0% { transform: rotate(0deg); } 60% { transform: rotate(5000deg); filter: blur(3px); } 100% { transform: rotate(6010deg); filter: blur(0); background: rgba(255,255,255,0.4); } }
+        @keyframes droneFlyInAndLand { 
+            0% { top: 150px; right: -300px; transform: rotate(15deg); } 
+            40% { top: 150px; right: 50%; transform: translateX(50%) rotate(0deg); } 
+            60% { top: 150px; right: 50%; transform: translateX(50%); } 
+            100% { top: 245px; right: 50%; transform: translateX(50%); } 
+        }
+
+        .drone-observation { 
+            top: 18px !important; 
+            left: 18px !important;
+            right: auto !important; 
+            width: 55px !important; 
+            transform: none !important; 
+            animation: droneBobbing 3s ease-in-out infinite !important;
+        }
+        .drone-observation .propeller { animation: propellerSlowSpin 2s linear infinite !important; width: 20px !important; height: 4px !important; }
+        @keyframes propellerSlowSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes droneBobbing {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(5px); }
+        }
+
+        .custom-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .custom-modal {
+            background: white; border-radius: 15px; padding: 35px 30px;
+            max-width: 350px; width: 90%; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+        }
+        .custom-modal p { font-size: 1.1rem; margin-bottom: 25px; line-height: 1.6; color: #333; }
+        .custom-modal-btns { display: flex; gap: 10px; justify-content: center; }
+        .custom-modal-btns button { padding: 12px 30px; border-radius: 10px; border: none; font-size: 1rem; font-weight: bold; cursor: pointer; }
+        .modal-confirm { background: var(--primary-gold); color: white; }
+        .modal-cancel { background: #eee; color: #333; }
+
+        /* רספונסיבי */
+        @media (max-width: 600px) {
+            .card { padding: 20px 15px; }
+            .sky-header { padding: 0 12px; }
+            .header-logo { height: 45px; }
+            #header-timer { font-size: 2.2rem; }
+            #header-progress { font-size: 1.1rem; padding: 4px 10px; }
+            .q-text { font-size: 1.15rem; }
+            .opt-btn { font-size: 1rem; padding: 14px; }
+            .main-brand-logo { width: 220px; }
+            .login-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .container { margin-top: calc(var(--header-height) + 15px); }
+            .drone-observation { width: 40px !important; top: 22px !important; left: 10px !important; }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) {
+            .card { padding: 30px 25px; }
+            #header-timer { font-size: 2.7rem; }
+            .q-text { font-size: 1.25rem; }
+            .drone-observation { width: 48px !important; }
+        }
+
+        @media (min-width: 1200px) {
+            .container { max-width: 800px; }
+            .q-text { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;" onkeydown="return disableSecurityKeys(event);">
+
+<div class="drone-container" id="main-drone">
+    <img src="drone.png" class="drone-img">
+    <div class="propeller p1"></div><div class="propeller p2"></div>
+    <div class="propeller p3"></div><div class="propeller p4"></div>
+</div>
+
+<header class="sky-header">
+    <img src="sky-logo.png" class="header-logo">
+    <div id="header-timer">60:00</div>
+    <div id="header-progress">0/50</div>
+</header>
+
+<div class="container">
+    <div id="page-login" class="card">
+        <img src="sky-logo.png" class="main-brand-logo">
+        <h2 style="text-align:center; color:var(--primary-gold);">מערכת הכנה מאובטחת</h2>
+        <div class="login-grid">
+            <input type="text" id="fname" placeholder="שם פרטי">
+            <input type="text" id="lname" placeholder="שם משפחה">
+            <input type="tel" id="phone" placeholder="מספר טלפון" class="full-width" oninput="formatPhone(this)" maxlength="12">
+            <input type="email" id="email" placeholder="אימייל" class="full-width">
+            <input type="password" id="license-key" placeholder="קוד רישיון גישה" class="full-width license-field">
+        </div>
+        <button class="btn btn-gold" onclick="verifyAndProceed()">אימות רישיון והמשך</button>
+    </div>
+
+    <div id="page-instructions" class="card hidden">
+        <img src="sky-logo.png" class="main-brand-logo" style="width:200px;">
+        <h2 style="text-align:center; color:var(--primary-gold); border-bottom: 2px solid var(--primary-gold); padding-bottom:10px;">בחינה עיונית ממוחשבת - הוראות</h2>
+        <div style="text-align: right; line-height: 1.6;">
+            <p>שלום <strong><span id="user-welcome"></span></strong>,</p>
+            <p style="background: #fff5f5; border: 1px solid #ffcccc; padding: 15px; border-radius: 8px; color: #d93025; font-weight: bold;">
+                🚨 הגנה: מערכת זו והשאלות בה מוגנות בזכויות יוצרים של SkyNext. חל איסור מוחלט על צילום מסך, העתקה או הפצה של התכנים. המערכת מנטרת פעילות חריגה.
+            </p>
+            <p>לפניך מערכת לתרגול מבחנים עיוניים לכטב"ם עד 25 ק"ג. השאלות מהוות הכנה איכותית למבחן המסכם ברת"א.</p>
+            <p><strong>• חומרי עזר:</strong> ניתן להשתמש בחומרי עזר שהוצגו בכיתה.</p>
+            <p><strong>• משך הבחינה:</strong> לרשותך 60 דקות לסיום המבחן.</p>
+            <p><strong>• אופן המענה:</strong> יש לסמן את התשובה הנכונה ביותר.</p>
+            <p><strong>• סיום הבחינה:</strong> בסיום המענה, יש ללחוץ על כפתור "הגש".</p>
+            <p><strong>• ציון מעבר:</strong> 70 ומעלה.</p>
+        </div>
+        <button class="btn btn-gold" onclick="startExam()" style="margin-top:20px;">הבנתי, התחל בבחינה</button>
+    </div>
+
+    <div id="page-exam" class="card hidden">
+        <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+        <div id="question-image" class="hidden"></div>
+        <div id="q-text" class="q-text"></div>
+        <div id="options-box"></div>
+        <div id="explanation-container" class="hidden"></div>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" style="background:#eee; flex:1;" onclick="changeQ(-1)">הקודם</button>
+            <button id="btn-return-results" class="btn hidden" style="background:var(--primary-gold); color:white; flex:1;" onclick="returnToResults()">חזרה לתוצאות</button>
+            <button class="btn" style="background:var(--sky-blue); color:white; flex:2;" onclick="changeQ(1)">הבא</button>
+        </div>
+        <div class="dots-nav" id="dots-nav"></div>
+        <button id="btn-finish" class="btn btn-gold hidden" style="margin-top:25px;" onclick="finishCheck()">סיום והגשה</button>
+        <button class="btn" style="margin-top:12px; background:#f0f4ff; color:#122fec; border:2px solid #122fec;" onclick="openContactModal()">✉️ פנייה למדריך</button>
+    </div>
+
+    <!-- פופאפ פנייה למדריך -->
+    <div id="contact-modal" class="custom-modal-overlay hidden">
+        <div class="custom-modal" style="max-width:420px;">
+            <h3 style="margin-bottom:20px; color:#122fec; font-size:1.2rem;">✉️ פנייה למדריך</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <label style="font-weight:bold; font-size:0.9rem; color:#555; text-align:right;">סוג הפנייה:</label>
+                <select id="contact-type" style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:1rem; text-align:right; font-family:inherit;">
+                    <option value="טעות בשאלה או תשובה">⚠️ טעות בשאלה / תשובה</option>
+                    <option value="בקשת הסבר נוסף">💡 בקשת הסבר נוסף</option>
+                    <option value="פנייה חופשית למדריך">💬 פנייה חופשית למדריך</option>
+                    <option value="באג טכני">🐛 באג טכני</option>
+                </select>
+                <label style="font-weight:bold; font-size:0.9rem; color:#555; text-align:right;">הערה / פירוט:</label>
+                <textarea id="contact-note" rows="3" placeholder="כתוב כאן את פנייתך..." style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:1rem; resize:none; font-family:inherit; text-align:right;"></textarea>
+            </div>
+            <div class="custom-modal-btns">
+                <button class="modal-confirm" onclick="sendContactWhatsApp()">📲 שלח בוואטסאפ</button>
+                <button class="modal-cancel" onclick="closeContactModal()">ביטול</button>
+            </div>
+        </div>
+    </div>
+        <h2 id="res-name" style="text-align:center;"></h2>
+        <div id="res-message" style="text-align:center; font-size:1.2rem; margin-bottom:10px; font-weight:bold;"></div>
+        <div id="res-score" style="font-size:5rem; font-weight:bold; text-align:center; margin:20px 0;"></div>
+        <button class="btn btn-gold" onclick="startReview()">סקירת תשובות</button>
+        <button class="btn" style="margin-top:10px; background:var(--sky-blue); color:white;" onclick="location.reload()">מבחן נוסף</button>
+        <button class="btn" style="margin-top:10px; background:#eee;" onclick="location.reload()">יציאה</button>
+    </div>
+</div>
+
+<footer class="sky-footer"><span>© 2026 SkyNext | מוגן בזכויות יוצרים</span></footer>
+
+<script>
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxtXQmKYccjaFLwBm7GOfWlCeOMJmIcgucZqJCDykqGR0bN6EUh1eT1xYFxpLOXvkjtGQ/exec";
+    let user = {};
+    let examStarted = false;
+
+    function disableSecurityKeys(e) {
+        if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'p' || e.key === 's')) return false;
+        if (e.key === 'F12' || e.keyCode === 123) return false;
+    }
+
+    window.addEventListener('beforeunload', function(e) {
+        if (examStarted) {
+            e.preventDefault();
+            e.returnValue = 'המבחן עדיין פעיל. האם אתה בטוח שברצונך לצאת?';
+        }
+    });
+
+    function showAlert(msg) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'custom-modal-overlay';
+            overlay.innerHTML = `
+                <div class="custom-modal">
+                    <p>${msg}</p>
+                    <div class="custom-modal-btns">
+                        <button class="modal-confirm">אישור</button>
+                    </div>
+                </div>`;
+            overlay.querySelector('.modal-confirm').onclick = () => { overlay.remove(); resolve(); };
+            document.body.appendChild(overlay);
+        });
+    }
+
+    function showConfirm(msg) {
+        return new Promise(resolve => {
+            const overlay = document.createElement('div');
+            overlay.className = 'custom-modal-overlay';
+            overlay.innerHTML = `
+                <div class="custom-modal">
+                    <p>${msg}</p>
+                    <div class="custom-modal-btns">
+                        <button class="modal-confirm">אישור</button>
+                        <button class="modal-cancel">ביטול</button>
+                    </div>
+                </div>`;
+            overlay.querySelector('.modal-confirm').onclick = () => { overlay.remove(); resolve(true); };
+            overlay.querySelector('.modal-cancel').onclick = () => { overlay.remove(); resolve(false); };
+            document.body.appendChild(overlay);
+        });
+    }
+
+    function formatPhone(input) {
+        let val = input.value.replace(/\D/g, '').substring(0, 10);
+        if (val.length >= 7) val = val.slice(0,3) + '-' + val.slice(3,6) + '-' + val.slice(6);
+        else if (val.length >= 4) val = val.slice(0,3) + '-' + val.slice(3);
+        input.value = val;
+    }
+
+    window.onload = function() {
+        if(localStorage.getItem('skynext_fname')) document.getElementById('fname').value = localStorage.getItem('skynext_fname');
+        if(localStorage.getItem('skynext_lname')) document.getElementById('lname').value = localStorage.getItem('skynext_lname');
+        if(localStorage.getItem('skynext_phone')) document.getElementById('phone').value = localStorage.getItem('skynext_phone');
+        if(localStorage.getItem('skynext_email')) document.getElementById('email').value = localStorage.getItem('skynext_email');
+    };
+
+    async function verifyAndProceed() {
+        const key = document.getElementById('license-key').value.trim();
+        const fn = document.getElementById('fname').value.trim();
+        const ln = document.getElementById('lname').value.trim();
+        const ph = document.getElementById('phone').value.trim();
+        const em = document.getElementById('email').value.trim();
+
+        if(!fn || !ln || !ph || !em || !key) { await showAlert("נא למלא את כל השדות!"); return; }
+
+        const phoneRegex = /^05\d{8}$/;
+        if(!phoneRegex.test(ph.replace(/-/g, ''))) {
+            await showAlert("מספר הטלפון אינו תקין.\nיש להזין מספר ישראלי תקין (לדוגמה: 050-123-4567)");
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if(!emailRegex.test(em)) {
+            await showAlert("כתובת האימייל אינה תקינה.\nיש להזין כתובת תקינה (לדוגמה: name@gmail.com)");
+            return;
+        }
+
+        const btn = document.querySelector("#page-login .btn-gold");
+        btn.innerText = "בודק רישיון...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${GOOGLE_URL}?key=${encodeURIComponent(key)}`);
+            const result = await response.text();
+
+            if (result.trim() === "true") {
+                localStorage.setItem('skynext_fname', fn);
+                localStorage.setItem('skynext_lname', ln);
+                localStorage.setItem('skynext_phone', ph);
+                localStorage.setItem('skynext_email', em);
+                user = { name: fn + " " + ln, phone: ph, email: em };
+                document.getElementById('user-welcome').innerText = user.name;
+                document.getElementById('page-login').classList.add('hidden');
+                document.getElementById('page-instructions').classList.remove('hidden');
+                document.getElementById('main-drone').classList.add('drone-observation');
+            } else {
+                await showAlert("קוד רישיון לא תקין או פג תוקף.");
+            }
+        } catch (e) {
+            await showAlert("שגיאה בחיבור לשרת.");
+        } finally {
+            btn.innerText = "אימות רישיון והמשך";
+            btn.disabled = false;
+        }
+    }
+
+    let questions = []; let current = 0; let answers = [];
+    let isReviewMode = false; let timeLeft = 3600; let timerId;
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    async function startExam() {
+        const btn = document.querySelector("#page-instructions .btn-gold");
+        btn.innerText = "טוען שאלות...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${GOOGLE_URL}?action=getQuestions`);
+            const text = await response.text();
+            const data = JSON.parse(text);
+            
+            if (!data || data.length === 0) {
+                await showAlert("שגיאה בטעינת השאלות. נסה שוב.");
+                btn.innerText = "הבנתי, התחל בבחינה";
+                btn.disabled = false;
+                return;
+            }
+            questions = shuffle(data);
+        } catch(e) {
+            await showAlert("שגיאה בחיבור לשרת.");
+            btn.innerText = "הבנתי, התחל בבחינה";
+            btn.disabled = false;
+            return;
+        }
+
+        questions.forEach(q => {
+            const correctAnswerText = q.a[q.c];
+            shuffle(q.a);
+            q.c = q.a.indexOf(correctAnswerText);
+        });
+
+        answers = new Array(questions.length).fill(null);
+        examStarted = true;
+        document.getElementById('page-instructions').classList.add('hidden');
+        document.getElementById('page-exam').classList.remove('hidden');
+        timerId = setInterval(updateTimer, 1000);
+        showQuestion();
+    }
+
+    function updateTimer() {
+        timeLeft--;
+        let m = Math.floor(timeLeft/60), s = timeLeft%60;
+        document.getElementById('header-timer').innerText = `${m}:${s<10?'0':''}${s}`;
+        if(timeLeft<=0) finishCheck();
+    }
+
+    function showQuestion() {
+        const q = questions[current];
+        document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
+
+        const imgBox = document.getElementById('question-image');
+        if (q.image) {
+            imgBox.innerHTML = `<img src="${q.image}" alt="תמונה לשאלה" style="width:100%; max-height:280px; object-fit:contain; border-radius:10px; margin-bottom:15px; border:1px solid #eee;">`;
+            imgBox.classList.remove('hidden');
+        } else {
+            imgBox.innerHTML = '';
+            imgBox.classList.add('hidden');
+        }
+
+        document.getElementById('q-text').textContent = q.q;
+        const optBox = document.getElementById('options-box'); optBox.innerHTML = '';
+        q.a.forEach((txt, i) => {
+            const btn = document.createElement('button');
+            btn.className = `opt-btn ${answers[current] === i ? 'selected' : ''}`;
+            if(isReviewMode) {
+                if(i === q.c) btn.style.background = "#d4edda";
+                if(answers[current] === i && i !== q.c) btn.style.background = "#f8d7da";
+                btn.disabled = true;
+            } else { btn.onclick = () => { answers[current] = i; showQuestion(); updateProgress(); }; }
+            btn.textContent = txt;
+            optBox.appendChild(btn);
+        });
+        const expBox = document.getElementById('explanation-container');
+        if(isReviewMode) {
+            expBox.innerHTML = `<div class="explanation-box"><strong>הסבר מקצועי:</strong> ${q.explanation}${q.link ? `<br><br><a href="${q.link}" target="_blank" style="display:inline-block; margin-top:10px; padding:12px 25px; background:#d4edda; color:#1a6b35; border-radius:10px; font-weight:bold; font-size:1rem; text-decoration:none; border: 2px solid #a8d5b5;">📖 למידע נוסף לחץ</a>` : ''}</div>`;
+            expBox.classList.remove('hidden');
+            document.getElementById('btn-return-results').classList.remove('hidden');
+        } else {
+            expBox.classList.add('hidden');
+            document.getElementById('btn-return-results').classList.add('hidden');
+        }
+        document.getElementById('btn-finish').classList.toggle('hidden', current !== questions.length - 1 || isReviewMode);
+        renderDots();
+    }
+
+    function updateProgress() {
+        const done = answers.filter(a => a !== null).length;
+        document.getElementById('progress-bar').style.width = (done / questions.length * 100) + "%";
+    }
+
+    function changeQ(dir) { current = Math.max(0, Math.min(questions.length - 1, current + dir)); showQuestion(); }
+
+    function renderDots() {
+        const nav = document.getElementById('dots-nav'); nav.innerHTML = '';
+        questions.forEach((_, i) => {
+            const d = document.createElement('div');
+            d.className = `dot ${answers[i] !== null ? 'answered' : ''} ${i === current ? 'active' : ''}`;
+            d.innerText = i + 1;
+            d.onclick = () => { current = i; showQuestion(); };
+            nav.appendChild(d);
+        });
+    }
+
+    async function finishCheck() {
+        const missing = answers.filter(a => a === null).length;
+        let msg = missing > 0 ? `לא ענית על ${missing} שאלות. להגיש בכל זאת?` : "להגיש את המבחן?";
+        if(await showConfirm(msg)) {
+            clearInterval(timerId);
+            examStarted = false;
+            let correct = 0;
+            questions.forEach((q, i) => { if(answers[i] === q.c) correct++; });
+            let score = Math.round((correct / questions.length) * 100);
+            
+            fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ 
+                name: user.name, phone: user.phone, email: user.email, score: score 
+            })});
+
+            document.getElementById('page-exam').classList.add('hidden');
+            document.getElementById('page-result').classList.remove('hidden');
+            
+            const resMsg = document.getElementById('res-message');
+            if (score >= 70) {
+                resMsg.innerHTML = "כל הכבוד! עברת את המבחן בהצלחה. <br> אתה מוכן לשלב הבא.";
+                resMsg.style.color = "#2ecc71";
+            } else {
+                resMsg.innerHTML = "לצערנו לא עברת הפעם. <br> מומלץ לעבור על הטעויות ולנסות שוב.";
+                resMsg.style.color = "#ff4d4d";
+            }
+
+            document.getElementById('res-name').innerText = user.name;
+            document.getElementById('res-score').innerText = score + "%";
+            document.getElementById('res-score').style.color = score >= 70 ? "#2ecc71" : "#ff4d4d";
+        }
+    }
+
+    function openContactModal() {
+        document.getElementById('contact-note').value = '';
+        document.getElementById('contact-modal').classList.remove('hidden');
+    }
+
+    function closeContactModal() {
+        document.getElementById('contact-modal').classList.add('hidden');
+    }
+
+    async function sendContactWhatsApp() {
+        const type = document.getElementById('contact-type').value;
+        const note = document.getElementById('contact-note').value.trim();
+        const qNum = current + 1;
+        const qText = questions[current] ? questions[current].q.substring(0, 60) + '...' : '';
+        
+        const msg = `📚 *פנייה ממערכת SkyNext*\n\n` +
+                    `👤 *שם:* ${user.name}\n` +
+                    `📞 *טלפון:* ${user.phone}\n` +
+                    `📧 *אימייל:* ${user.email}\n\n` +
+                    `📋 *סוג פנייה:* ${type}\n` +
+                    `🔢 *שאלה מספר:* ${qNum}\n` +
+                    `❓ *השאלה:* ${qText}\n\n` +
+                    `💬 *הערה:* ${note || 'ללא הערה נוספת'}`;
+
+        const phone = '972506277304';
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+        closeContactModal();
+        await showAlert("✅ הפנייה נשלחה! המדריך יחזור אליך בהקדם.");
+    }
+
+    function startReview() { isReviewMode = true; current = 0; document.getElementById('page-result').classList.add('hidden'); document.getElementById('page-exam').classList.remove('hidden'); showQuestion(); }
+    function returnToResults() { document.getElementById('page-exam').classList.add('hidden'); document.getElementById('page-result').classList.remove('hidden'); }
+</script>
+</body>
+</html>
