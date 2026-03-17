@@ -399,7 +399,7 @@
 <!-- מסך כניסה -->
 <div id="login-screen">
     <div class="login-box">
-        <div class="login-logo">✈ SkyNext</div>
+        <div class="login-logo"><img src="logo.png" style="height:80px; width:auto;"></div>
         <div class="login-sub">דשבורד ניהול ובקרה</div>
         <input type="password" class="login-input" id="admin-pass" placeholder="קוד גישה" onkeydown="if(event.key==='Enter') doLogin()">
         <button class="login-btn" onclick="doLogin()">כניסה למערכת</button>
@@ -410,9 +410,12 @@
 <!-- כותרת -->
 <header class="header" id="main-header" style="display:none;">
     <div class="header-brand">
-        <div>
-            <div class="header-logo-text">✈ SkyNext</div>
-            <div class="header-subtitle">דשבורד ניהול ובקרה</div>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <img src="logo.png" style="height:50px; width:auto;">
+            <div>
+                <div class="header-logo-text">SkyNext ✈</div>
+                <div class="header-subtitle">דשבורד ניהול ובקרה</div>
+            </div>
         </div>
     </div>
     <div class="header-actions">
