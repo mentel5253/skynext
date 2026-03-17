@@ -547,15 +547,26 @@ function exportPDF() {
 function doLogin() {
     const val = document.getElementById('admin-pass').value.trim();
     if (val === ADMIN_PASS) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-header').style.display = 'flex';
-        document.getElementById('dashboard').style.display = 'block';
-        loadData();
+        sessionStorage.setItem('skynext_admin', 'true');
+        showDashboard();
     } else {
         document.getElementById('login-error').innerText = 'קוד גישה שגוי. נסה שוב.';
         document.getElementById('admin-pass').value = '';
     }
 }
+
+function showDashboard() {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('main-header').style.display = 'flex';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+}
+
+window.onload = function() {
+    if (sessionStorage.getItem('skynext_admin') === 'true') {
+        showDashboard();
+    }
+};
 
 async function loadData() {
     try {
