@@ -109,12 +109,9 @@
         .explanation-box { background: #f0f3ff; border-right: 6px solid var(--primary-gold); padding: 20px; margin-top: 20px; border-radius: 8px; line-height: 1.6; }
         .sky-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #1a1a1a; color: #aaa; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
 
-        .drone-container { position: fixed; width: 180px; top: -250px; right: -300px; z-index: 2000; pointer-events: none; animation: droneFlyInAndLand 10s ease-in-out forwards; transition: all 2s ease-in-out; }
+        .drone-container { position: fixed; width: 180px; top: -250px; right: -300px; z-index: 2000; pointer-events: none; animation: droneFlyInAndLand 10s ease-in-out forwards; }
         .drone-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7)); }
-      
-        }
-        .p1 { top: 20%; left: 14%; } .p2 { top: 20%; right: 14%; } .p3 { bottom: 25%; left: 10%; } .p4 { bottom: 25%; right: 10%; }
-        @keyframes propellerSpinToStop { 0% { transform: rotate(0deg); } 60% { transform: rotate(5000deg); filter: blur(3px); } 100% { transform: rotate(6010deg); filter: blur(0); background: rgba(255,255,255,0.4); } }
+
         @keyframes droneFlyInAndLand { 
             0% { top: 150px; right: -300px; transform: rotate(15deg); } 
             40% { top: 150px; right: 60%; transform: translateX(50%) rotate(0deg); } 
@@ -130,8 +127,6 @@
             transform: none !important; 
             animation: droneBobbing 3s ease-in-out infinite !important;
         }
-        .drone-observation .propeller { animation: propellerSlowSpin 2s linear infinite !important; width: 20px !important; height: 4px !important; }
-        @keyframes propellerSlowSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes droneBobbing {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(5px); }
@@ -142,6 +137,7 @@
             background: rgba(0,0,0,0.6); z-index: 9999;
             display: flex; align-items: center; justify-content: center;
         }
+        .custom-modal-overlay.hidden { display: none !important; }
         .custom-modal {
             background: white; border-radius: 15px; padding: 35px 30px;
             max-width: 350px; width: 90%; text-align: center;
@@ -239,6 +235,29 @@
         </div>
         <div class="dots-nav" id="dots-nav"></div>
         <button id="btn-finish" class="btn btn-gold hidden" style="margin-top:25px;" onclick="finishCheck()">סיום והגשה</button>
+        <button id="btn-contact" class="btn hidden" style="margin-top:12px; background:#f0f4ff; color:#122fec; border:2px solid #122fec; font-size:0.95rem; padding:10px;" onclick="openContactModal()">✉️ פנייה למדריך</button>
+    </div>
+
+    <!-- פופאפ פנייה למדריך -->
+    <div id="contact-modal" class="custom-modal-overlay hidden">
+        <div class="custom-modal" style="max-width:420px;">
+            <h3 style="margin-bottom:20px; color:#122fec; font-size:1.2rem;">✉️ פנייה למדריך</h3>
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+                <label style="font-weight:bold; font-size:0.9rem; color:#555; text-align:right;">סוג הפנייה:</label>
+                <select id="contact-type" style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:1rem; text-align:right; font-family:inherit;">
+                    <option value="טעות בשאלה או תשובה">⚠️ טעות בשאלה / תשובה</option>
+                    <option value="בקשת הסבר נוסף">💡 בקשת הסבר נוסף</option>
+                    <option value="פנייה חופשית למדריך">💬 פנייה חופשית למדריך</option>
+                    <option value="באג טכני">🐛 באג טכני</option>
+                </select>
+                <label style="font-weight:bold; font-size:0.9rem; color:#555; text-align:right;">הערה / פירוט:</label>
+                <textarea id="contact-note" rows="3" placeholder="כתוב כאן את פנייתך..." style="padding:12px; border-radius:8px; border:1px solid #ccc; font-size:1rem; resize:none; font-family:inherit; text-align:right;"></textarea>
+            </div>
+            <div class="custom-modal-btns">
+                <button class="modal-confirm" onclick="sendContactWhatsApp()">📲 שלח בוואטסאפ</button>
+                <button class="modal-cancel" onclick="closeContactModal()">ביטול</button>
+            </div>
+        </div>
     </div>
 
     <div id="page-result" class="card hidden">
@@ -427,6 +446,7 @@
     function showQuestion() {
         const q = questions[current];
         document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
+        document.getElementById('btn-contact').classList.remove('hidden');
 
         const imgBox = document.getElementById('question-image');
         if (q.image) {
@@ -511,6 +531,37 @@
             document.getElementById('res-score').innerText = score + "%";
             document.getElementById('res-score').style.color = score >= 70 ? "#2ecc71" : "#ff4d4d";
         }
+    }
+
+    function openContactModal() {
+        document.getElementById('contact-note').value = '';
+        document.getElementById('contact-modal').classList.remove('hidden');
+    }
+
+    function closeContactModal() {
+        document.getElementById('contact-modal').classList.add('hidden');
+    }
+
+    async function sendContactWhatsApp() {
+        const type = document.getElementById('contact-type').value;
+        const note = document.getElementById('contact-note').value.trim();
+        const qNum = current + 1;
+        const qText = questions[current] ? questions[current].q.substring(0, 60) + '...' : '';
+        
+        const msg = `📚 *פנייה ממערכת SkyNext*\n\n` +
+                    `👤 *שם:* ${user.name}\n` +
+                    `📞 *טלפון:* ${user.phone}\n` +
+                    `📧 *אימייל:* ${user.email}\n\n` +
+                    `📋 *סוג פנייה:* ${type}\n` +
+                    `🔢 *שאלה מספר:* ${qNum}\n` +
+                    `❓ *השאלה:* ${qText}\n\n` +
+                    `💬 *הערה:* ${note || 'ללא הערה נוספת'}`;
+
+        const phone = '972506277304';
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+        window.open(url, '_blank');
+        closeContactModal();
+        await showAlert("✅ הפנייה נשלחה! המדריך יחזור אליך בהקדם.");
     }
 
     function startReview() { isReviewMode = true; current = 0; document.getElementById('page-result').classList.add('hidden'); document.getElementById('page-exam').classList.remove('hidden'); showQuestion(); }
