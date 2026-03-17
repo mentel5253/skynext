@@ -5,7 +5,7 @@
     <title>SkyNext - מערכת הכנה למבחן רת"א | מוגן</title>
     <style>
         :root { 
-            --primary-gold: #dbb04a; 
+            --primary-gold: #122fec; 
             --sky-blue: #637ef7; 
             --bg-dark: #2d2d2d; 
             --card-white: #ffffff; 
@@ -32,7 +32,23 @@
         }
 
         .header-logo { height: 65px; width: auto; }
-        #header-timer { font-size: 3.2rem; font-weight: 900; }
+
+        #header-timer { 
+            font-size: 3.2rem; font-weight: 900;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        #header-progress {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 16px;
+            border-radius: 10px;
+            min-width: 90px;
+            text-align: center;
+        }
 
         .container { 
             width: 95%; 
@@ -63,7 +79,7 @@
         }
         .full-width { grid-column: span 2; }
         .license-field { 
-            border: 2px solid var(--primary-gold) !important; background: #fffdf5; 
+            border: 2px solid var(--primary-gold) !important; background: #f5f7ff; 
             font-weight: bold; text-align: center !important; letter-spacing: 2px; 
         }
 
@@ -90,7 +106,7 @@
         .dot.answered { background: var(--sky-blue); color: white; }
         .dot.active { outline: 3px solid #333; transform: scale(1.1); font-weight: bold; }
 
-        .explanation-box { background: #fff9e6; border-right: 6px solid var(--primary-gold); padding: 20px; margin-top: 20px; border-radius: 8px; line-height: 1.6; }
+        .explanation-box { background: #f0f3ff; border-right: 6px solid var(--primary-gold); padding: 20px; margin-top: 20px; border-radius: 8px; line-height: 1.6; }
         .sky-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #1a1a1a; color: #aaa; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
 
         .drone-container { position: fixed; width: 180px; top: -250px; right: -300px; z-index: 2000; pointer-events: none; animation: droneFlyInAndLand 10s ease-in-out forwards; transition: all 2s ease-in-out; }
@@ -108,11 +124,12 @@
             60% { top: 150px; right: 50%; transform: translateX(50%); } 
             100% { top: 245px; right: 50%; transform: translateX(50%); } 
         }
+
         .drone-observation { 
-            top: 25px !important; 
-            left: 400px !important;
+            top: 18px !important; 
+            left: 18px !important;
             right: auto !important; 
-            width: 80px !important; 
+            width: 55px !important; 
             transform: none !important; 
             animation: droneBobbing 3s ease-in-out infinite !important;
         }
@@ -123,7 +140,6 @@
             50% { transform: translateY(5px); }
         }
 
-        /* --- פופאפ מותאם אישית --- */
         .custom-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); z-index: 9999;
@@ -134,16 +150,39 @@
             max-width: 350px; width: 90%; text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         }
-        .custom-modal p {
-            font-size: 1.1rem; margin-bottom: 25px; line-height: 1.6; color: #333;
-        }
+        .custom-modal p { font-size: 1.1rem; margin-bottom: 25px; line-height: 1.6; color: #333; }
         .custom-modal-btns { display: flex; gap: 10px; justify-content: center; }
-        .custom-modal-btns button {
-            padding: 12px 30px; border-radius: 10px; border: none;
-            font-size: 1rem; font-weight: bold; cursor: pointer;
-        }
+        .custom-modal-btns button { padding: 12px 30px; border-radius: 10px; border: none; font-size: 1rem; font-weight: bold; cursor: pointer; }
         .modal-confirm { background: var(--primary-gold); color: white; }
         .modal-cancel { background: #eee; color: #333; }
+
+        /* רספונסיבי */
+        @media (max-width: 600px) {
+            .card { padding: 20px 15px; }
+            .sky-header { padding: 0 12px; }
+            .header-logo { height: 45px; }
+            #header-timer { font-size: 2.2rem; }
+            #header-progress { font-size: 1.1rem; padding: 4px 10px; }
+            .q-text { font-size: 1.15rem; }
+            .opt-btn { font-size: 1rem; padding: 14px; }
+            .main-brand-logo { width: 220px; }
+            .login-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .container { margin-top: calc(var(--header-height) + 15px); }
+            .drone-observation { width: 40px !important; top: 22px !important; left: 10px !important; }
+        }
+
+        @media (min-width: 601px) and (max-width: 900px) {
+            .card { padding: 30px 25px; }
+            #header-timer { font-size: 2.7rem; }
+            .q-text { font-size: 1.25rem; }
+            .drone-observation { width: 48px !important; }
+        }
+
+        @media (min-width: 1200px) {
+            .container { max-width: 800px; }
+            .q-text { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body oncontextmenu="return false;" onkeydown="return disableSecurityKeys(event);">
@@ -163,7 +202,7 @@
 <div class="container">
     <div id="page-login" class="card">
         <img src="logo.png" class="main-brand-logo">
-        <h2 style="text-align:center; color:var(--primary-gold);">מערכת הכנה מאובטחת</h2>
+        <h2 style="text-align:center; color:var(--primary-gold);">מערכת למידה למבחני כטב"מ</h2>
         <div class="login-grid">
             <input type="text" id="fname" placeholder="שם פרטי">
             <input type="text" id="lname" placeholder="שם משפחה">
@@ -220,15 +259,22 @@
 <footer class="sky-footer"><span>© 2026 SkyNext | מוגן בזכויות יוצרים</span></footer>
 
 <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbw145rON6vQzWongpx0F-cDvymVPM6-xR_aYEkY1_i7YoPCiiwV-gwdWp2r3hIHmjLpuQ/exec";
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxtXQmKYccjaFLwBm7GOfWlCeOMJmIcgucZqJCDykqGR0bN6EUh1eT1xYFxpLOXvkjtGQ/exec";
     let user = {};
+    let examStarted = false;
 
     function disableSecurityKeys(e) {
         if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'p' || e.key === 's')) return false;
         if (e.key === 'F12' || e.keyCode === 123) return false;
     }
 
-    // פופאפ התראה מותאם
+    window.addEventListener('beforeunload', function(e) {
+        if (examStarted) {
+            e.preventDefault();
+            e.returnValue = 'המבחן עדיין פעיל. האם אתה בטוח שברצונך לצאת?';
+        }
+    });
+
     function showAlert(msg) {
         return new Promise(resolve => {
             const overlay = document.createElement('div');
@@ -245,7 +291,6 @@
         });
     }
 
-    // פופאפ אישור מותאם
     function showConfirm(msg) {
         return new Promise(resolve => {
             const overlay = document.createElement('div');
@@ -287,19 +332,18 @@
 
         if(!fn || !ln || !ph || !em || !key) { await showAlert("נא למלא את כל השדות!"); return; }
 
-        // אימות טלפון
         const phoneRegex = /^05\d{8}$/;
-        if (!phoneRegex.test(ph.replace(/-/g, ''))) {
-            await showAlert("מספר הטלפון אינו תקין.\nיש להזין מספר ישראלי תקין (לדוגמה: 0501234567)");
+        if(!phoneRegex.test(ph.replace(/-/g, ''))) {
+            await showAlert("מספר הטלפון אינו תקין.\nיש להזין מספר ישראלי תקין (לדוגמה: 050-123-4567)");
             return;
         }
 
-        // אימות אימייל
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(em)) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+        if(!emailRegex.test(em)) {
             await showAlert("כתובת האימייל אינה תקינה.\nיש להזין כתובת תקינה (לדוגמה: name@gmail.com)");
             return;
         }
+
         const btn = document.querySelector("#page-login .btn-gold");
         btn.innerText = "בודק רישיון...";
         btn.disabled = true;
@@ -371,6 +415,7 @@
         });
 
         answers = new Array(questions.length).fill(null);
+        examStarted = true;
         document.getElementById('page-instructions').classList.add('hidden');
         document.getElementById('page-exam').classList.remove('hidden');
         timerId = setInterval(updateTimer, 1000);
@@ -388,7 +433,6 @@
         const q = questions[current];
         document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
 
-        // תמונה לשאלה
         const imgBox = document.getElementById('question-image');
         if (q.image) {
             imgBox.innerHTML = `<img src="${q.image}" alt="תמונה לשאלה" style="width:100%; max-height:280px; object-fit:contain; border-radius:10px; margin-bottom:15px; border:1px solid #eee;">`;
@@ -447,6 +491,7 @@
         let msg = missing > 0 ? `לא ענית על ${missing} שאלות. להגיש בכל זאת?` : "להגיש את המבחן?";
         if(await showConfirm(msg)) {
             clearInterval(timerId);
+            examStarted = false;
             let correct = 0;
             questions.forEach((q, i) => { if(answers[i] === q.c) correct++; });
             let score = Math.round((correct / questions.length) * 100);
