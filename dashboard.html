@@ -20,7 +20,7 @@
             --text-muted: #8899aa;
             --green: #2ecc71;
             --red: #e74c3c;
-            --header-h: 70px;
+            --header-h: 85px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -70,17 +70,15 @@
         }
 
         .login-logo {
-            font-size: 2.5rem;
-            font-weight: 900;
-            color: var(--gold);
-            letter-spacing: 2px;
-            margin-bottom: 8px;
+            margin-bottom: 15px;
         }
 
         .login-sub {
-            color: var(--text-muted);
-            font-size: 0.9rem;
+            color: var(--gold);
+            font-size: 1rem;
+            font-weight: 700;
             margin-bottom: 35px;
+            letter-spacing: 1px;
         }
 
         .login-input {
@@ -128,25 +126,34 @@
             background: rgba(26,26,46,0.95);
             border-bottom: 1px solid var(--card-border);
             display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 25px;
             z-index: 100;
             backdrop-filter: blur(20px);
         }
 
+        /* לוגו ימין */
         .header-brand {
-            display: flex; align-items: center; gap: 12px;
+            display: flex; align-items: center;
         }
 
-        .header-logo-text {
-            font-size: 1.4rem;
+        .header-brand img {
+            height: 65px;
+            width: auto;
+        }
+
+        /* כותרת מרכז */
+        .header-center {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+        }
+
+        .header-center-title {
+            font-size: 1.3rem;
             font-weight: 900;
             color: var(--gold);
             letter-spacing: 1px;
-        }
-
-        .header-subtitle {
-            color: var(--text-muted);
-            font-size: 0.85rem;
         }
 
         .header-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
@@ -325,10 +332,7 @@
 
         .leader-rank { font-size: 1.2rem; width: 30px; text-align: center; }
         .leader-name { flex: 1; font-weight: 600; }
-        .leader-score {
-            font-weight: 900;
-            font-size: 1.1rem;
-        }
+        .leader-score { font-weight: 900; font-size: 1.1rem; }
 
         /* ===== HARD QUESTIONS ===== */
         .hard-q-item {
@@ -391,6 +395,7 @@
             .kpi-grid { grid-template-columns: 1fr 1fr; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .main { padding: calc(var(--header-h) + 20px) 15px 30px; }
+            .header-center-title { font-size: 1rem; }
         }
     </style>
 </head>
@@ -410,13 +415,10 @@
 <!-- כותרת -->
 <header class="header" id="main-header" style="display:none;">
     <div class="header-brand">
-        <div style="display:flex; align-items:center; gap:12px;">
-            <img src="logodashboard.png" style="height:150px; width:auto;">
-            <div>
-                
-                <div class="header-subtitle">דשבורד ניהול ובקרה</div>
-            </div>
-        </div>
+        <img src="logodashboard.png">
+    </div>
+    <div class="header-center">
+        <div class="header-center-title">דשבורד ניהול ובקרה</div>
     </div>
     <div class="header-actions">
         <div class="last-update" id="last-update"></div>
@@ -587,32 +589,21 @@ function renderDashboard(data) {
     const students = data.students || [];
     if (students.length === 0) return;
 
-    // חישובים
     const avgs = students.map(s => s.avg * 100);
     const totalStudents = students.length;
     const passed = students.filter(s => s.avg * 100 >= 70).length;
     const failed = totalStudents - passed;
     const classAvg = avgs.reduce((a,b) => a+b, 0) / avgs.length;
 
-    // KPI
     document.getElementById('kpi-avg').innerText = Math.round(classAvg) + '%';
     document.getElementById('kpi-total').innerText = totalStudents;
     document.getElementById('kpi-pass').innerText = passed;
     document.getElementById('kpi-fail').innerText = failed;
 
-    // גרף ציונים
     renderChart(students);
-
-    // לידרבורד
     renderLeaderboard(students);
-
-    // טבלה מלאה
     renderTable(students);
-
-    // התראות
     renderAlerts(students);
-
-    // שאלות קשות
     renderHardQuestions(data.hardQuestions || []);
 }
 
@@ -639,9 +630,7 @@ function renderChart(students) {
             responsive: true,
             plugins: {
                 legend: { display: false },
-                tooltip: {
-                    callbacks: { label: ctx => ctx.parsed.y + '%' }
-                }
+                tooltip: { callbacks: { label: ctx => ctx.parsed.y + '%' } }
             },
             scales: {
                 y: {
