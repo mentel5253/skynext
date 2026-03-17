@@ -404,7 +404,7 @@
 <!-- מסך כניסה -->
 <div id="login-screen">
     <div class="login-box">
-        <div class="login-logo"><img src="logodashboard.png" style="height:150px; width:auto;"></div>
+        <div class="login-logo"><img src="logodashboard.png" style="height:100px; width:auto; display:block; margin:0 auto 5px;"></div>
         <div class="login-sub">דשבורד ניהול ובקרה</div>
         <input type="password" class="login-input" id="admin-pass" placeholder="קוד גישה" onkeydown="if(event.key==='Enter') doLogin()">
         <button class="login-btn" onclick="doLogin()">כניסה למערכת</button>
@@ -422,8 +422,8 @@
     </div>
     <div class="header-actions">
         <div class="last-update" id="last-update"></div>
-        <button class="refresh-btn" onclick="loadData()">🔄 רענן נתונים</button>
-        <button class="refresh-btn" onclick="exportPDF()" style="background:#e74c3c; border-color:#e74c3c; color:white;">📄 ייצוא PDF</button>
+        <button class="refresh-btn" onclick="loadData()">🔄 רענן</button>
+        <button class="refresh-btn" onclick="exportPDF()" style="background:#e74c3c; border-color:#e74c3c; color:white;">📄 PDF</button>
         <button class="refresh-btn" onclick="doLogout()" style="background:#555; border-color:#555; color:white;">🚪 יציאה</button>
     </div>
 </header>
