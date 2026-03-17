@@ -244,7 +244,7 @@
         </div>
         <div class="dots-nav" id="dots-nav"></div>
         <button id="btn-finish" class="btn btn-gold hidden" style="margin-top:25px;" onclick="finishCheck()">סיום והגשה</button>
-        <button class="btn" style="margin-top:12px; background:#f0f4ff; color:#122fec; border:2px solid #122fec;" onclick="openContactModal()">✉️ פנייה למדריך</button>
+        <button id="btn-contact" class="btn hidden" style="margin-top:12px; background:#f0f4ff; color:#122fec; border:2px solid #122fec; font-size:0.95rem; padding:10px;" onclick="openContactModal()">✉️ פנייה למדריך</button>
     </div>
 
     <!-- פופאפ פנייה למדריך -->
@@ -453,6 +453,7 @@
     function showQuestion() {
         const q = questions[current];
         document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
+        document.getElementById('btn-contact').classList.remove('hidden');
 
         const imgBox = document.getElementById('question-image');
         if (q.image) {
