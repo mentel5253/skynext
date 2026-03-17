@@ -167,7 +167,7 @@
         <div class="login-grid">
             <input type="text" id="fname" placeholder="שם פרטי">
             <input type="text" id="lname" placeholder="שם משפחה">
-            <input type="tel" id="phone" placeholder="מספר טלפון" class="full-width">
+            <input type="tel" id="phone" placeholder="מספר טלפון" class="full-width" oninput="formatPhone(this)" maxlength="12">
             <input type="email" id="email" placeholder="אימייל" class="full-width">
             <input type="password" id="license-key" placeholder="קוד רישיון גישה" class="full-width license-field">
         </div>
@@ -194,6 +194,7 @@
 
     <div id="page-exam" class="card hidden">
         <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
+        <div id="question-image" class="hidden"></div>
         <div id="q-text" class="q-text"></div>
         <div id="options-box"></div>
         <div id="explanation-container" class="hidden"></div>
@@ -263,6 +264,13 @@
         });
     }
 
+    function formatPhone(input) {
+        let val = input.value.replace(/\D/g, '').substring(0, 10);
+        if (val.length >= 7) val = val.slice(0,3) + '-' + val.slice(3,6) + '-' + val.slice(6);
+        else if (val.length >= 4) val = val.slice(0,3) + '-' + val.slice(3);
+        input.value = val;
+    }
+
     window.onload = function() {
         if(localStorage.getItem('skynext_fname')) document.getElementById('fname').value = localStorage.getItem('skynext_fname');
         if(localStorage.getItem('skynext_lname')) document.getElementById('lname').value = localStorage.getItem('skynext_lname');
@@ -278,6 +286,20 @@
         const em = document.getElementById('email').value.trim();
 
         if(!fn || !ln || !ph || !em || !key) { await showAlert("נא למלא את כל השדות!"); return; }
+
+        // אימות טלפון
+        const phoneRegex = /^05\d{8}$/;
+        if (!phoneRegex.test(ph.replace(/-/g, ''))) {
+            await showAlert("מספר הטלפון אינו תקין.\nיש להזין מספר ישראלי תקין (לדוגמה: 0501234567)");
+            return;
+        }
+
+        // אימות אימייל
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(em)) {
+            await showAlert("כתובת האימייל אינה תקינה.\nיש להזין כתובת תקינה (לדוגמה: name@gmail.com)");
+            return;
+        }
         const btn = document.querySelector("#page-login .btn-gold");
         btn.innerText = "בודק רישיון...";
         btn.disabled = true;
@@ -365,6 +387,17 @@
     function showQuestion() {
         const q = questions[current];
         document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
+
+        // תמונה לשאלה
+        const imgBox = document.getElementById('question-image');
+        if (q.image) {
+            imgBox.innerHTML = `<img src="${q.image}" alt="תמונה לשאלה" style="width:100%; max-height:280px; object-fit:contain; border-radius:10px; margin-bottom:15px; border:1px solid #eee;">`;
+            imgBox.classList.remove('hidden');
+        } else {
+            imgBox.innerHTML = '';
+            imgBox.classList.add('hidden');
+        }
+
         document.getElementById('q-text').textContent = q.q;
         const optBox = document.getElementById('options-box'); optBox.innerHTML = '';
         q.a.forEach((txt, i) => {
