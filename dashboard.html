@@ -370,7 +370,26 @@
 </head>
 <body>
 
-<!-- מסך כניסה -->
+<body oncontextmenu="return false;" onkeydown="return disableSecurityKeys(event);">
+
+<script>
+(function() {
+    function blockDevTools() {
+        const threshold = 160;
+        if (window.outerWidth - window.innerWidth > threshold || 
+            window.outerHeight - window.innerHeight > threshold) {
+            document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1a1a2e;color:#dbb04a;font-size:2rem;font-family:Heebo,sans-serif;">⛔ גישה אסורה</div>';
+        }
+    }
+    setInterval(blockDevTools, 1000);
+})();
+
+function disableSecurityKeys(e) {
+    if (e.key === 'F12' || e.keyCode === 123) return false;
+    if (e.ctrlKey && e.shiftKey && ['I','J','C','U'].includes(e.key.toUpperCase())) return false;
+    if (e.ctrlKey && ['U','S','P'].includes(e.key.toUpperCase())) return false;
+}
+</script>
 <div id="login-screen">
     <div class="login-box">
         <div class="login-logo"><img src="logodashboard.png" style="height:100px; width:auto; display:block; margin:0 auto 5px;"></div>
@@ -394,9 +413,25 @@
         <div class="last-update" id="last-update"></div>
         <button class="refresh-btn" onclick="loadData()">🔄 רענן</button>
         <button class="refresh-btn" onclick="exportPDF()" style="background:#e74c3c; border-color:#e74c3c; color:white;">📄 PDF</button>
-        <button class="refresh-btn" onclick="doLogout()" style="background:#555; border-color:#555; color:white;">🚪 יציאה</button>
+        <button class="refresh-btn" onclick="openChangePass()" style="background:#555; border-color:#555; color:white;">🔑 סיסמה</button>
+        <button class="refresh-btn" onclick="doLogout()" style="background:#333; border-color:#333; color:white;">🚪 יציאה</button>
     </div>
 </header>
+
+<!-- פופאפ שינוי סיסמה -->
+<div id="change-pass-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#16213e; border:1px solid rgba(255,255,255,0.1); border-radius:20px; padding:40px; width:340px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,0.5);">
+        <h3 style="color:#dbb04a; margin-bottom:25px; font-size:1.2rem;">🔑 שינוי סיסמת מנהל</h3>
+        <input type="password" id="pass-current" placeholder="סיסמה נוכחית" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:white; font-size:1rem; margin-bottom:12px; text-align:center; font-family:Heebo,sans-serif;">
+        <input type="password" id="pass-new" placeholder="סיסמה חדשה" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:white; font-size:1rem; margin-bottom:12px; text-align:center; font-family:Heebo,sans-serif;">
+        <input type="password" id="pass-confirm" placeholder="אישור סיסמה חדשה" style="width:100%; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:white; font-size:1rem; margin-bottom:20px; text-align:center; font-family:Heebo,sans-serif;">
+        <div id="pass-error" style="color:#e74c3c; font-size:0.9rem; margin-bottom:15px; min-height:20px;"></div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="doChangePass()" style="flex:1; padding:12px; background:#dbb04a; color:#1a1a2e; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-family:Heebo,sans-serif;">עדכן</button>
+            <button onclick="closeChangePass()" style="flex:1; padding:12px; background:rgba(255,255,255,0.1); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer; font-family:Heebo,sans-serif;">ביטול</button>
+        </div>
+    </div>
+</div>
 
 <!-- תוכן ראשי -->
 <main class="main" id="dashboard" style="display:none;">
@@ -520,6 +555,44 @@ function exportPDF() {
     win.print();
 }
 
+function openChangePass() {
+    document.getElementById('pass-current').value = '';
+    document.getElementById('pass-new').value = '';
+    document.getElementById('pass-confirm').value = '';
+    document.getElementById('pass-error').innerText = '';
+    document.getElementById('change-pass-modal').style.display = 'flex';
+}
+
+function closeChangePass() {
+    document.getElementById('change-pass-modal').style.display = 'none';
+}
+
+function doChangePass() {
+    const current = document.getElementById('pass-current').value.trim();
+    const newPass = document.getElementById('pass-new').value.trim();
+    const confirm = document.getElementById('pass-confirm').value.trim();
+    const errorEl = document.getElementById('pass-error');
+
+    const savedPass = localStorage.getItem('skynext_admin_pass') || ADMIN_PASS;
+
+    if (current !== savedPass) {
+        errorEl.innerText = '❌ הסיסמה הנוכחית שגויה';
+        return;
+    }
+    if (newPass.length < 4) {
+        errorEl.innerText = '❌ הסיסמה החדשה קצרה מדי (מינימום 4 תווים)';
+        return;
+    }
+    if (newPass !== confirm) {
+        errorEl.innerText = '❌ הסיסמאות אינן תואמות';
+        return;
+    }
+
+    localStorage.setItem('skynext_admin_pass', newPass);
+    closeChangePass();
+    alert('✅ הסיסמה עודכנה בהצלחה!');
+}
+
 function doLogout() {
     sessionStorage.removeItem('skynext_admin');
     document.getElementById('main-header').style.display = 'none';
@@ -530,7 +603,8 @@ function doLogout() {
 
 function doLogin() {
     const val = document.getElementById('admin-pass').value.trim();
-    if (val === ADMIN_PASS) {
+    const savedPass = localStorage.getItem('skynext_admin_pass') || ADMIN_PASS;
+    if (val === savedPass) {
         sessionStorage.setItem('skynext_admin', 'true');
         showDashboard();
     } else {
