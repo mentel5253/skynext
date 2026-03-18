@@ -50,6 +50,20 @@
             text-align: center;
         }
 
+        .dashboard-btn {
+            padding: 7px 14px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            transition: 0.2s;
+        }
+        .dashboard-btn:hover { background: rgba(255,255,255,0.35); }
+
         .container { 
             width: 95%; 
             max-width: 750px; 
@@ -163,6 +177,7 @@
             .full-width { grid-column: span 1; }
             .container { margin-top: calc(var(--header-height) + 15px); }
             .drone-observation { width: 40px !important; top: 22px !important; left: 10px !important; }
+            .dashboard-btn { font-size: 0.75rem; padding: 5px 8px; }
         }
 
         @media (min-width: 601px) and (max-width: 900px) {
@@ -187,7 +202,10 @@
 <header class="sky-header">
     <img src="logo.png" class="header-logo">
     <div id="header-timer">60:00</div>
-    <div id="header-progress">0/50</div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <div id="header-progress">0/50</div>
+        <a href="dashboard.html" class="dashboard-btn">Dashboard</a>
+    </div>
 </header>
 
 <div class="container">
