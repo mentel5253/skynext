@@ -160,6 +160,7 @@
             left: 50%;
             transform: translateX(-50%);
             text-align: center;
+            pointer-events: none;
         }
 
         .header-center-title {
@@ -363,8 +364,25 @@
             .kpi-grid { grid-template-columns: 1fr 1fr; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .main { padding: calc(var(--header-h) + 20px) 15px 30px; }
-            .header-center-title { font-size: 1rem; }
-            .skynext-btn { font-size: 0.75rem; padding: 6px 10px; }
+            .header-center-title { font-size: 0.9rem; }
+            .header-brand img { height: 45px; }
+            .skynext-btn { font-size: 0.7rem; padding: 5px 8px; }
+            .header-center { position: static; transform: none; flex: 1; text-align: center; }
+            .header { flex-wrap: nowrap; gap: 5px; padding: 0 10px; }
+            .header-brand { gap: 6px; }
+            .refresh-btn { padding: 6px 10px; font-size: 0.8rem; }
+            .last-update { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            :root { --header-h: 60px; }
+            .header-brand img { height: 35px; }
+            .skynext-btn { display: none; }
+            .header-center-title { font-size: 0.85rem; }
+            .kpi-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .kpi-card { padding: 15px; }
+            .kpi-value { font-size: 1.8rem; }
+            .kpi-icon { font-size: 1.3rem; margin-bottom: 8px; }
         }
     </style>
 </head>
@@ -594,7 +612,6 @@ function doChangePass() {
 }
 
 function doLogout() {
-    sessionStorage.removeItem('skynext_admin');
     document.getElementById('main-header').style.display = 'none';
     document.getElementById('dashboard').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
@@ -605,7 +622,6 @@ function doLogin() {
     const val = document.getElementById('admin-pass').value.trim();
     const savedPass = localStorage.getItem('skynext_admin_pass') || ADMIN_PASS;
     if (val === savedPass) {
-        sessionStorage.setItem('skynext_admin', 'true');
         showDashboard();
     } else {
         document.getElementById('login-error').innerText = 'קוד גישה שגוי. נסה שוב.';
@@ -621,9 +637,10 @@ function showDashboard() {
 }
 
 window.onload = function() {
-    if (sessionStorage.getItem('skynext_admin') === 'true') {
-        showDashboard();
-    }
+    // תמיד מציג מסך כניסה
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('main-header').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'none';
 };
 
 async function loadData() {
