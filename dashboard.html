@@ -196,12 +196,6 @@
         .pass { color: var(--green); }
         .fail { color: var(--red); }
 
-        /* ===== CHAPTER PROGRESS TABLE ===== */
-        .chapter-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-left: 6px; }
-        .chapter-dot.pass { background: var(--green); }
-        .chapter-dot.fail { background: var(--red); }
-        .chapter-dot.pending { background: #555; }
-
         /* ===== LEADERBOARD ===== */
         .leader-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .leader-item:last-child { border-bottom: none; }
@@ -235,11 +229,37 @@
         }
         .admin-input:focus { outline: none; border-color: var(--gold); }
         .admin-btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
-        .admin-btn {
-            padding: 10px 20px; border: none; border-radius: 10px;
-            font-family: 'Heebo', sans-serif; font-size: 0.9rem;
-            font-weight: 700; cursor: pointer; transition: 0.2s;
+
+        /* ===== כפתורי פתיחה/נעילה זוגיים ===== */
+        .lock-unlock-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 8px;
         }
+        .lock-unlock-row .action-group {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .lock-unlock-row .action-group-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .action-group.open-side { border-color: rgba(46,204,113,0.3); }
+        .action-group.lock-side { border-color: rgba(231,76,60,0.3); }
+
+        .admin-btn {
+            padding: 10px 16px; border: none; border-radius: 10px;
+            font-family: 'Heebo', sans-serif; font-size: 0.85rem;
+            font-weight: 700; cursor: pointer; transition: 0.2s;
+            width: 100%; text-align: center; margin-bottom: 6px;
+        }
+        .admin-btn:last-child { margin-bottom: 0; }
         .admin-btn.blue { background: var(--blue); color: white; }
         .admin-btn.blue:hover { opacity: 0.85; }
         .admin-btn.green { background: var(--green); color: white; }
@@ -250,6 +270,8 @@
         .admin-btn.orange:hover { opacity: 0.85; }
         .admin-btn.gold { background: var(--gold); color: #1a1a2e; }
         .admin-btn.gold:hover { background: var(--gold-light); }
+        .admin-btn.dark-red { background: #8b0000; color: white; }
+        .admin-btn.dark-red:hover { background: #a00000; }
         .admin-feedback { margin-top: 10px; padding: 10px 15px; border-radius: 8px; font-size: 0.9rem; display: none; }
         .admin-feedback.success { background: rgba(46,204,113,0.15); border: 1px solid rgba(46,204,113,0.3); color: var(--green); display: block; }
         .admin-feedback.error { background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); color: var(--red); display: block; }
@@ -273,6 +295,7 @@
             .refresh-btn { padding: 6px 10px; font-size: 0.8rem; }
             .last-update { display: none; }
             .tabs-bar { flex-wrap: wrap; }
+            .lock-unlock-row { grid-template-columns: 1fr; }
         }
         @media (max-width: 480px) {
             :root { --header-h: 60px; }
@@ -352,9 +375,9 @@ function disableSecurityKeys(e) {
 
     <!-- טאבים -->
     <div class="tabs-bar">
-        <button class="tab-btn active" onclick="switchTab('stats')">📊 סטטיסטיקות</button>
-        <button class="tab-btn" onclick="switchTab('chapters')">📚 התקדמות פרקים</button>
-        <button class="tab-btn" onclick="switchTab('admin')">⚙️ שליטת מנהל</button>
+        <button class="tab-btn active" onclick="switchTab('stats', this)">📊 סטטיסטיקות</button>
+        <button class="tab-btn" onclick="switchTab('chapters', this)">📚 התקדמות פרקים</button>
+        <button class="tab-btn" onclick="switchTab('admin', this)">⚙️ שליטת מנהל</button>
     </div>
 
     <!-- טאב 1: סטטיסטיקות -->
@@ -406,20 +429,29 @@ function disableSecurityKeys(e) {
     <div id="tab-admin" class="tab-content">
         <div class="grid-2">
 
-            <!-- פתיחת פרקים לחניך ספציפי -->
+            <!-- פתיחה/נעילה לחניך ספציפי -->
             <div class="panel">
                 <div class="admin-section">
-                    <div class="admin-section-title">📱 פתיחת פרקים לחניך ספציפי</div>
+                    <div class="admin-section-title">📱 ניהול פרקים לחניך ספציפי</div>
                     <input type="tel" id="admin-phone-unlock" class="admin-input" placeholder="מספר טלפון חניך (050-123-4567)">
-                    <div class="admin-btn-row">
-                        <button class="admin-btn green" onclick="adminUnlockAll()">🔓 פתח את כל הפרקים</button>
-                        <button class="admin-btn orange" onclick="adminOpenFinal()">🏆 פתח מבחן מסכם בלבד</button>
+
+                    <div class="lock-unlock-row">
+                        <div class="action-group open-side">
+                            <div class="action-group-title">🔓 פתיחה</div>
+                            <button class="admin-btn green" onclick="adminUnlockAll()">פתח את כל הפרקים</button>
+                            <button class="admin-btn orange" onclick="adminOpenFinal()">פתח מבחן מסכם בלבד</button>
+                        </div>
+                        <div class="action-group lock-side">
+                            <div class="action-group-title">🔒 נעילה</div>
+                            <button class="admin-btn red" onclick="adminLockAll()">נעל את כל הפרקים</button>
+                            <button class="admin-btn dark-red" onclick="adminLockFinal()">נעל מבחן מסכם בלבד</button>
+                        </div>
                     </div>
                     <div id="feedback-unlock" class="admin-feedback"></div>
                 </div>
 
                 <!-- איפוס התקדמות חניך -->
-                <div class="admin-section" style="margin-top:30px;">
+                <div class="admin-section" style="margin-top:20px;">
                     <div class="admin-section-title">🔄 איפוס התקדמות חניך</div>
                     <input type="tel" id="admin-phone-reset" class="admin-input" placeholder="מספר טלפון חניך לאיפוס">
                     <div class="admin-btn-row">
@@ -429,20 +461,28 @@ function disableSecurityKeys(e) {
                 </div>
             </div>
 
-            <!-- פתיחה גלובלית -->
+            <!-- פתיחה/נעילה גלובלית -->
             <div class="panel">
                 <div class="admin-section">
-                    <div class="admin-section-title">🌍 פתיחה גלובלית לכולם</div>
-                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px; line-height:1.6;">פתיחת כל הפרקים לכל החניכים בבת אחת — שימושי לניסויים, הדגמות וכד'.</p>
-                    <div class="admin-btn-row">
-                        <button class="admin-btn gold" onclick="adminUnlockAllStudents()">🔓 פתח לכולם</button>
+                    <div class="admin-section-title">🌍 ניהול גלובלי לכולם</div>
+                    <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px; line-height:1.6;">פתיחה או נעילה של כל הפרקים לכל החניכים בבת אחת.</p>
+
+                    <div class="lock-unlock-row">
+                        <div class="action-group open-side">
+                            <div class="action-group-title">🔓 פתיחה גלובלית</div>
+                            <button class="admin-btn gold" onclick="adminUnlockAllStudents()">פתח לכולם</button>
+                        </div>
+                        <div class="action-group lock-side">
+                            <div class="action-group-title">🔒 נעילה גלובלית</div>
+                            <button class="admin-btn dark-red" onclick="adminLockAllStudents()">נעל לכולם</button>
+                        </div>
                     </div>
                     <div id="feedback-global" class="admin-feedback"></div>
                 </div>
 
                 <!-- מבחן פתוח ללא תנאי מעבר -->
-                <div class="admin-section" style="margin-top:30px;">
-                    <div class="admin-section-title">🧪 שליחת מבחן פתוח לחניך</div>
+                <div class="admin-section" style="margin-top:20px;">
+                    <div class="admin-section-title">🧪 שליחת מבחן ניסוי לחניך</div>
                     <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:15px; line-height:1.6;">מאפשר לחניך לגשת למבחן המסכם ללא תנאי מעבר — לצורך ניסוי.</p>
                     <input type="tel" id="admin-phone-trial" class="admin-input" placeholder="מספר טלפון חניך לניסוי">
                     <div class="admin-btn-row">
@@ -462,13 +502,18 @@ const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxPDakwRIs5GH8uwrba0
 const ADMIN_PASS = "pilot100";
 let chartScores = null;
 let allProgressData = [];
+let allStudentsData = [];
+let allHardQuestions = [];
+let activeTab = 'stats';
 
 // ===== TABS =====
-function switchTab(tab) {
+function switchTab(tab, btn) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     document.getElementById(`tab-${tab}`).classList.add('active');
-    event.target.classList.add('active');
+    if (btn) btn.classList.add('active');
+    else document.querySelector(`[onclick="switchTab('${tab}', this)"]`)?.classList.add('active');
+    activeTab = tab;
 }
 
 // ===== AUTH =====
@@ -533,6 +578,8 @@ async function loadData() {
         const text = await response.text();
         const data = JSON.parse(text);
         allProgressData = data.progress || [];
+        allStudentsData = data.students || [];
+        allHardQuestions = data.hardQuestions || [];
         renderDashboard(data);
         renderChaptersTab(allProgressData);
         document.getElementById('last-update').innerText = 'עדכון אחרון: ' + new Date().toLocaleTimeString('he-IL');
@@ -680,36 +727,148 @@ function renderHardQuestions(hardQs) {
         </div>`).join('');
 }
 
-// ===== PDF =====
+// ===== PDF מלא לפי טאב פעיל =====
 function exportPDF() {
-    const style = `<style>body{font-family:Arial,sans-serif;direction:rtl;background:white;color:black;padding:20px}h1{text-align:center;color:#122fec;margin-bottom:20px}.kpi-row{display:flex;gap:20px;margin-bottom:20px}.kpi-box{border:2px solid #122fec;border-radius:10px;padding:15px;flex:1;text-align:center}.kpi-val{font-size:2rem;font-weight:bold;color:#122fec}.kpi-lbl{font-size:0.9rem;color:#555}table{width:100%;border-collapse:collapse;margin-top:20px}th{background:#122fec;color:white;padding:10px;text-align:right}td{padding:8px 10px;border-bottom:1px solid #eee;text-align:right}tr:nth-child(even){background:#f5f7ff}.pass{color:#2ecc71;font-weight:bold}.fail{color:#e74c3c;font-weight:bold}.footer{text-align:center;margin-top:30px;color:#aaa;font-size:0.8rem}</style>`;
+    if (activeTab === 'stats') exportPDFStats();
+    else if (activeTab === 'chapters') exportPDFChapters();
+    else if (activeTab === 'admin') exportPDFAdmin();
+}
+
+function getPDFBase() {
+    return `<style>
+        body{font-family:Arial,sans-serif;direction:rtl;background:white;color:black;padding:20px}
+        h1{text-align:center;color:#122fec;margin-bottom:5px}
+        .subtitle{text-align:center;color:#888;font-size:0.9rem;margin-bottom:20px}
+        .kpi-row{display:flex;gap:15px;margin-bottom:20px;flex-wrap:wrap}
+        .kpi-box{border:2px solid #122fec;border-radius:10px;padding:15px;flex:1;text-align:center;min-width:100px}
+        .kpi-val{font-size:1.8rem;font-weight:bold;color:#122fec}
+        .kpi-val.green{color:#2ecc71}.kpi-val.red{color:#e74c3c}
+        .kpi-lbl{font-size:0.85rem;color:#555}
+        table{width:100%;border-collapse:collapse;margin-top:15px}
+        th{background:#122fec;color:white;padding:10px;text-align:right;font-size:0.85rem}
+        td{padding:8px 10px;border-bottom:1px solid #eee;text-align:right;font-size:0.9rem}
+        tr:nth-child(even){background:#f5f7ff}
+        .pass{color:#2ecc71;font-weight:bold}.fail{color:#e74c3c;font-weight:bold}
+        .section-title{color:#122fec;font-size:1.1rem;font-weight:bold;margin:20px 0 10px;border-bottom:2px solid #122fec;padding-bottom:5px}
+        .footer{text-align:center;margin-top:30px;color:#aaa;font-size:0.8rem;border-top:1px solid #eee;padding-top:10px}
+        .alert-row{background:#fff5f5;border-right:4px solid #e74c3c}
+    </style>`;
+}
+
+function exportPDFStats() {
     const avg = document.getElementById('kpi-avg').innerText;
     const total = document.getElementById('kpi-total').innerText;
     const pass = document.getElementById('kpi-pass').innerText;
     const fail = document.getElementById('kpi-fail').innerText;
-    const tableRows = Array.from(document.querySelectorAll('.students-table tbody tr')).map(row => {
-        const cells = row.querySelectorAll('td');
-        if (cells.length < 4) return '';
-        const score = parseInt(cells[3].innerText);
-        return `<tr><td>${cells[0].innerText}</td><td>${cells[1].innerText}</td><td>${cells[2].innerText}</td><td class="${score>=70?'pass':'fail'}">${cells[3].innerText}</td></tr>`;
-    }).join('');
     const now = new Date().toLocaleDateString('he-IL');
-    const html = `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">${style}</head><body>
-        <h1>✈ SkyNext — דשבורד ניהול ובקרה</h1>
-        <p style="text-align:center;color:#888;margin-bottom:20px;">תאריך: ${now}</p>
+
+    const tableRows = allStudentsData.length > 0
+        ? [...allStudentsData].sort((a,b) => b.avg - a.avg).map((s, i) => {
+            const score = Math.round(s.avg * 100);
+            return `<tr class="${score < 70 ? 'alert-row' : ''}">
+                <td>${i+1}</td><td>${s.name}</td><td>${s.count}</td>
+                <td class="${score >= 70 ? 'pass' : 'fail'}">${score}%</td>
+            </tr>`;
+          }).join('')
+        : '<tr><td colspan="4" style="text-align:center;color:#aaa;">אין נתונים</td></tr>';
+
+    const hardQsHTML = allHardQuestions.slice(0, 5).map((q, i) =>
+        `<tr><td>${i+1}</td><td>${q.text || '—'}</td><td class="fail">${q.errorRate || 0}%</td></tr>`
+    ).join('') || '<tr><td colspan="3" style="text-align:center;color:#aaa;">אין נתונים</td></tr>';
+
+    const html = `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">${getPDFBase()}</head><body>
+        <h1>✈ SkyNext — סטטיסטיקות מבחן מסכם</h1>
+        <div class="subtitle">תאריך: ${now} | מערכת הכנה לכטב"מ</div>
         <div class="kpi-row">
             <div class="kpi-box"><div class="kpi-val">${avg}</div><div class="kpi-lbl">ממוצע מסכם</div></div>
             <div class="kpi-box"><div class="kpi-val">${total}</div><div class="kpi-lbl">סה"כ חניכים</div></div>
-            <div class="kpi-box"><div class="kpi-val" style="color:#2ecc71">${pass}</div><div class="kpi-lbl">עברו</div></div>
-            <div class="kpi-box"><div class="kpi-val" style="color:#e74c3c">${fail}</div><div class="kpi-lbl">נכשלו</div></div>
+            <div class="kpi-box"><div class="kpi-val green">${pass}</div><div class="kpi-lbl">עברו ✅</div></div>
+            <div class="kpi-box"><div class="kpi-val red">${fail}</div><div class="kpi-lbl">נכשלו ❌</div></div>
         </div>
-        <table><thead><tr><th>#</th><th>שם חניך</th><th>מבחנים</th><th>ממוצע</th></tr></thead><tbody>${tableRows}</tbody></table>
-        <div class="footer">© 2026 SkyNext | מוגן בזכויות יוצרים</div>
+        <div class="section-title">📊 טבלת חניכים מלאה</div>
+        <table><thead><tr><th>#</th><th>שם חניך</th><th>מבחנים</th><th>ממוצע</th></tr></thead>
+        <tbody>${tableRows}</tbody></table>
+        <div class="section-title">❓ שאלות הכי קשות (5 ראשונות)</div>
+        <table><thead><tr><th>#</th><th>שאלה</th><th>שיעור טעות</th></tr></thead>
+        <tbody>${hardQsHTML}</tbody></table>
+        <div class="footer">© 2026 SkyNext | מוגן בזכויות יוצרים | הופק: ${now}</div>
     </body></html>`;
+    openPrint(html);
+}
+
+function exportPDFChapters() {
+    const now = new Date().toLocaleDateString('he-IL');
+    const metPass = document.getElementById('kpi-met-pass').innerText;
+    const lawPass = document.getElementById('kpi-law-pass').innerText;
+    const techPass = document.getElementById('kpi-tech-pass').innerText;
+
+    const rows = allProgressData.map(p => {
+        const m = Math.round(p.meteorology || 0);
+        const l = Math.round(p.law || 0);
+        const t = Math.round(p.technical || 0);
+        const allOk = m >= 90 && l >= 90 && t >= 90;
+        const fmt = (v) => `<span class="${v >= 90 ? 'pass' : v > 0 ? 'fail' : ''}">${v > 0 ? v+'%' : '—'}</span>`;
+        return `<tr>
+            <td>${p.name || '—'}</td>
+            <td style="direction:ltr;text-align:center;">${p.phone || '—'}</td>
+            <td style="text-align:center;">${fmt(m)}</td>
+            <td style="text-align:center;">${fmt(l)}</td>
+            <td style="text-align:center;">${fmt(t)}</td>
+            <td style="text-align:center;">${allOk ? '🏆 מוכן' : 'בתהליך'}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="6" style="text-align:center;color:#aaa;">אין נתונים</td></tr>';
+
+    const html = `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">${getPDFBase()}</head><body>
+        <h1>✈ SkyNext — התקדמות חניכים לפי פרקים</h1>
+        <div class="subtitle">תאריך: ${now}</div>
+        <div class="kpi-row">
+            <div class="kpi-box"><div class="kpi-val">${metPass}</div><div class="kpi-lbl">🌤️ מטאורולוגיה</div></div>
+            <div class="kpi-box"><div class="kpi-val">${lawPass}</div><div class="kpi-lbl">📜 חוקה ותקנות</div></div>
+            <div class="kpi-box"><div class="kpi-val">${techPass}</div><div class="kpi-lbl">🔧 ידע טכני</div></div>
+        </div>
+        <div class="section-title">📚 פירוט התקדמות לפי חניך</div>
+        <table>
+            <thead><tr><th>שם חניך</th><th>טלפון</th><th>🌤️ מטאורולוגיה</th><th>📜 חוקה</th><th>🔧 ידע טכני</th><th>סטטוס</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="footer">© 2026 SkyNext | מוגן בזכויות יוצרים | הופק: ${now}</div>
+    </body></html>`;
+    openPrint(html);
+}
+
+function exportPDFAdmin() {
+    const now = new Date().toLocaleDateString('he-IL');
+    const rows = allProgressData.map(p => {
+        const m = Math.round(p.meteorology || 0);
+        const l = Math.round(p.law || 0);
+        const t = Math.round(p.technical || 0);
+        return `<tr>
+            <td>${p.name || '—'}</td>
+            <td style="direction:ltr;text-align:center;">${p.phone || '—'}</td>
+            <td style="text-align:center;">${m > 0 ? m+'%' : '—'}</td>
+            <td style="text-align:center;">${l > 0 ? l+'%' : '—'}</td>
+            <td style="text-align:center;">${t > 0 ? t+'%' : '—'}</td>
+        </tr>`;
+    }).join('') || '<tr><td colspan="5" style="text-align:center;color:#aaa;">אין נתונים</td></tr>';
+
+    const html = `<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">${getPDFBase()}</head><body>
+        <h1>✈ SkyNext — דוח שליטת מנהל</h1>
+        <div class="subtitle">תאריך: ${now} | רשימת חניכים וסטטוס פרקים</div>
+        <div class="section-title">⚙️ סטטוס פרקים לכלל החניכים</div>
+        <table>
+            <thead><tr><th>שם חניך</th><th>טלפון</th><th>מטאורולוגיה</th><th>חוקה</th><th>ידע טכני</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="footer">© 2026 SkyNext | מוגן בזכויות יוצרים | הופק: ${now}</div>
+    </body></html>`;
+    openPrint(html);
+}
+
+function openPrint(html) {
     const win = window.open('', '_blank');
     win.document.write(html);
     win.document.close();
-    win.print();
+    setTimeout(() => win.print(), 500);
 }
 
 // ===== ADMIN CONTROLS =====
@@ -724,6 +883,7 @@ function normalizePhone(raw) {
     return raw.replace(/\D/g, '');
 }
 
+// ===== פתיחה לחניך ספציפי =====
 async function adminUnlockAll() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', '❌ הזן מספר טלפון', 'error'); return; }
@@ -752,6 +912,35 @@ async function adminOpenFinal() {
     } catch(e) { showFeedback('feedback-unlock', '❌ שגיאה בחיבור לשרת', 'error'); }
 }
 
+// ===== נעילה לחניך ספציפי =====
+async function adminLockAll() {
+    const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
+    if (!phone) { showFeedback('feedback-unlock', '❌ הזן מספר טלפון', 'error'); return; }
+    if (!confirm(`לנעול את כל הפרקים עבור ${phone}?`)) return;
+    try {
+        await Promise.all([
+            fetch(`${GOOGLE_URL}?action=resetProgress&phone=${phone}&chapter=${encodeURIComponent('מטאורולוגיה')}`),
+            fetch(`${GOOGLE_URL}?action=resetProgress&phone=${phone}&chapter=${encodeURIComponent('חוקה')}`),
+            fetch(`${GOOGLE_URL}?action=resetProgress&phone=${phone}&chapter=${encodeURIComponent('ידע טכני')}`)
+        ]);
+        showFeedback('feedback-unlock', '🔒 כל הפרקים ננעלו!', 'success');
+        loadData();
+    } catch(e) { showFeedback('feedback-unlock', '❌ שגיאה בחיבור לשרת', 'error'); }
+}
+
+async function adminLockFinal() {
+    const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
+    if (!phone) { showFeedback('feedback-unlock', '❌ הזן מספר טלפון', 'error'); return; }
+    if (!confirm(`לנעול את המבחן המסכם עבור ${phone}?`)) return;
+    try {
+        // נעל את ידע טכני (שהוא המחסום האחרון לפני מסכם)
+        await fetch(`${GOOGLE_URL}?action=resetProgress&phone=${phone}&chapter=${encodeURIComponent('ידע טכני')}`);
+        showFeedback('feedback-unlock', '🔒 המבחן המסכם ננעל!', 'success');
+        loadData();
+    } catch(e) { showFeedback('feedback-unlock', '❌ שגיאה בחיבור לשרת', 'error'); }
+}
+
+// ===== איפוס חניך =====
 async function adminResetProgress() {
     const phone = normalizePhone(document.getElementById('admin-phone-reset').value);
     if (!phone) { showFeedback('feedback-reset', '❌ הזן מספר טלפון', 'error'); return; }
@@ -767,6 +956,7 @@ async function adminResetProgress() {
     } catch(e) { showFeedback('feedback-reset', '❌ שגיאה בחיבור לשרת', 'error'); }
 }
 
+// ===== פתיחה/נעילה גלובלית =====
 async function adminUnlockAllStudents() {
     if (!confirm('לפתוח את כל הפרקים לכל החניכים?')) return;
     if (!allProgressData || allProgressData.length === 0) { showFeedback('feedback-global', '❌ אין חניכים במערכת עדיין', 'error'); return; }
@@ -779,6 +969,22 @@ async function adminUnlockAllStudents() {
         });
         await Promise.all(promises);
         showFeedback('feedback-global', `✅ נפתח לכל ${allProgressData.length} החניכים!`, 'success');
+        loadData();
+    } catch(e) { showFeedback('feedback-global', '❌ שגיאה בחיבור לשרת', 'error'); }
+}
+
+async function adminLockAllStudents() {
+    if (!confirm('⚠️ לנעול את כל הפרקים לכל החניכים? פעולה זו תאפס את כל ההתקדמות!')) return;
+    if (!allProgressData || allProgressData.length === 0) { showFeedback('feedback-global', '❌ אין חניכים במערכת עדיין', 'error'); return; }
+    try {
+        const promises = [];
+        allProgressData.forEach(p => {
+            ['מטאורולוגיה', 'חוקה', 'ידע טכני'].forEach(ch => {
+                promises.push(fetch(`${GOOGLE_URL}?action=resetProgress&phone=${p.phone}&chapter=${encodeURIComponent(ch)}`));
+            });
+        });
+        await Promise.all(promises);
+        showFeedback('feedback-global', `🔒 כל הפרקים ננעלו עבור ${allProgressData.length} חניכים!`, 'success');
         loadData();
     } catch(e) { showFeedback('feedback-global', '❌ שגיאה בחיבור לשרת', 'error'); }
 }
