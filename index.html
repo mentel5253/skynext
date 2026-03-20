@@ -40,21 +40,17 @@
         .hidden { display: none !important; }
         .main-brand-logo { width: 320px; max-width: 90%; height: auto; margin: 0 auto 25px; display: block; }
 
-        /* LOGIN */
         .login-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
         input { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1rem; box-sizing: border-box; text-align: right; }
         .full-width { grid-column: span 2; }
         .license-field { border: 2px solid var(--primary-gold) !important; background: #f5f7ff; font-weight: bold; text-align: center !important; letter-spacing: 2px; }
 
-        /* BUTTONS */
         .btn { padding: 16px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 1.15rem; width: 100%; text-align: center; transition: 0.2s; }
         .btn-gold { background: var(--primary-gold); color: white; }
         .btn-gold:hover { opacity: 0.9; }
 
-        /* CHAPTERS */
         .chapter-intro { text-align: center; margin-bottom: 25px; color: #555; font-size: 1rem; line-height: 1.6; }
         .chapters-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
-
         .chapter-btn { padding: 25px 15px; border-radius: 15px; border: 3px solid #eee; background: #fff; cursor: pointer; text-align: center; transition: 0.3s; position: relative; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
         .chapter-btn.active { border-color: var(--sky-blue); background: linear-gradient(135deg, #f0f4ff, #e8eeff); box-shadow: 0 5px 20px rgba(99,126,247,0.3); }
         .chapter-btn.active:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(99,126,247,0.4); }
@@ -63,7 +59,6 @@
         .chapter-btn.locked { border-color: #ddd; background: #f9f9f9; cursor: not-allowed; opacity: 0.6; }
         .chapter-btn.final { grid-column: span 2; }
         .chapter-btn.final.active { border-color: var(--primary-gold); background: linear-gradient(135deg, #f0f3ff, #e8ecff); box-shadow: 0 5px 20px rgba(18,47,236,0.3); }
-
         .chapter-icon { font-size: 2.5rem; margin-bottom: 10px; }
         .chapter-name { font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 8px; }
         .chapter-status { font-size: 0.85rem; font-weight: 600; }
@@ -73,7 +68,6 @@
         .chapter-score { font-size: 0.8rem; color: #888; margin-top: 4px; }
         .chapter-lock-icon { position: absolute; top: 10px; left: 10px; font-size: 1rem; }
 
-        /* PROGRESS STEPS */
         .progress-steps { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .step-dot { width: 12px; height: 12px; border-radius: 50%; background: #ddd; }
         .step-dot.done { background: var(--green); }
@@ -81,7 +75,6 @@
         .step-line { width: 30px; height: 3px; background: #ddd; border-radius: 2px; }
         .step-line.done { background: var(--green); }
 
-        /* EXAM */
         .progress-container { width: 100%; background-color: #eee; height: 12px; border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
         .progress-bar { height: 100%; background-color: var(--primary-gold); width: 0%; transition: width 0.4s; }
         .q-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 25px; line-height: 1.6; color: #333; }
@@ -92,11 +85,8 @@
         .dot.answered { background: var(--sky-blue); color: white; }
         .dot.active { outline: 3px solid #333; transform: scale(1.1); font-weight: bold; }
         .explanation-box { background: #f0f3ff; border-right: 6px solid var(--primary-gold); padding: 20px; margin-top: 20px; border-radius: 8px; line-height: 1.6; }
-
-        /* RESULT */
         .result-chapter-badge { display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 0.9rem; font-weight: 700; margin-bottom: 15px; background: #f0f4ff; color: var(--sky-blue); }
 
-        /* MODALS */
         .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .custom-modal-overlay.hidden { display: none !important; }
         .custom-modal { background: white; border-radius: 15px; padding: 35px 30px; max-width: 350px; width: 90%; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
@@ -106,11 +96,9 @@
         .modal-confirm { background: var(--primary-gold); color: white; }
         .modal-cancel { background: #eee; color: #333; }
 
-        /* WATERMARK */
         .watermark { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 9998; overflow: hidden; }
         .watermark-text { position: absolute; color: rgba(18,47,236,0.08); font-size: 1.2rem; font-weight: 900; white-space: nowrap; transform: rotate(-35deg); user-select: none; letter-spacing: 2px; }
 
-        /* DRONE */
         .drone-container { position: fixed; width: 180px; top: -250px; right: -300px; z-index: 2000; pointer-events: none; animation: droneFlyInAndLand 10s ease-in-out forwards; }
         .drone-img { width: 100%; height: auto; display: block; filter: drop-shadow(0 20px 30px rgba(0,0,0,0.7)); }
         @keyframes droneFlyInAndLand { 0% { top: 150px; right: -300px; transform: rotate(15deg); } 40% { top: 150px; right: 60%; transform: translateX(50%) rotate(0deg); } 60% { top: 150px; right: 60%; transform: translateX(50%); } 100% { top: 245px; right: 70%; transform: translateX(50%); } }
@@ -119,7 +107,6 @@
 
         .sky-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #1a1a1a; color: #aaa; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
 
-        /* RESPONSIVE */
         @media (max-width: 600px) {
             .card { padding: 20px 15px; }
             .sky-header { padding: 0 12px; }
@@ -145,17 +132,19 @@
 <div class="drone-container" id="main-drone"><img src="drone.png" class="drone-img"></div>
 
 <header class="sky-header">
+    <!-- לוגו בימין -->
+    <img src="logo.png" class="header-logo">
+    <!-- טיימר במרכז -->
+    <div id="header-timer" class="hidden">60:00</div>
+    <!-- התקדמות + Dashboard בשמאל -->
     <div style="display:flex; align-items:center; gap:10px;">
-        <img src="logo.png" class="header-logo">
+        <div id="header-progress" class="hidden">0/50</div>
         <a href="dashboard.html" class="dashboard-btn">Dashboard</a>
     </div>
-    <div id="header-timer" class="hidden">60:00</div>
-    <div id="header-progress" class="hidden">0/50</div>
 </header>
 
 <div class="container">
 
-    <!-- מסך כניסה -->
     <div id="page-login" class="card">
         <img src="logo.png" class="main-brand-logo">
         <h2 style="text-align:center; color:var(--primary-gold);">מערכת למידה למבחני כטב"מ</h2>
@@ -169,7 +158,6 @@
         <button class="btn btn-gold" onclick="verifyAndProceed()">אימות רישיון והמשך</button>
     </div>
 
-    <!-- הוראות -->
     <div id="page-instructions" class="card hidden">
         <img src="logo.png" class="main-brand-logo" style="width:200px;">
         <h2 style="text-align:center; color:var(--primary-gold); border-bottom: 2px solid var(--primary-gold); padding-bottom:10px;">מערכת הכנה למבחן כטב"מ</h2>
@@ -186,7 +174,6 @@
         <button class="btn btn-gold" onclick="showChapterSelect()" style="margin-top:20px;">הבנתי, קדימה! 🚀</button>
     </div>
 
-    <!-- בחירת פרק -->
     <div id="page-chapters" class="card hidden">
         <img src="logo.png" class="main-brand-logo" style="width:180px;">
         <h2 style="text-align:center; color:var(--primary-gold); margin-bottom:10px;">בחר פרק לתרגול</h2>
@@ -224,7 +211,6 @@
         </div>
     </div>
 
-    <!-- מבחן -->
     <div id="page-exam" class="card hidden">
         <div style="text-align:center; margin-bottom:15px;">
             <span id="exam-chapter-badge" class="result-chapter-badge"></span>
@@ -244,7 +230,6 @@
         <button id="btn-contact" class="btn hidden" style="margin-top:12px; background:#f0f4ff; color:#122fec; border:2px solid #122fec; font-size:0.95rem; padding:10px;" onclick="openContactModal()">פנייה למדריך <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:20px; height:20px; vertical-align:middle; margin-right:6px;"></button>
     </div>
 
-    <!-- פופאפ פנייה -->
     <div id="contact-modal" class="custom-modal-overlay hidden">
         <div class="custom-modal" style="max-width:420px;">
             <h3 style="margin-bottom:20px; color:#122fec; font-size:1.2rem;">✉️ פנייה למדריך</h3>
@@ -266,7 +251,6 @@
         </div>
     </div>
 
-    <!-- תוצאות -->
     <div id="page-result" class="card hidden">
         <div style="text-align:center;"><span id="res-chapter-badge" class="result-chapter-badge"></span></div>
         <h2 id="res-name" style="text-align:center;"></h2>
