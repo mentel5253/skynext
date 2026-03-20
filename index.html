@@ -568,6 +568,7 @@
         if(localStorage.getItem('skynext_lname')) document.getElementById('lname').value = localStorage.getItem('skynext_lname');
         if(localStorage.getItem('skynext_phone')) document.getElementById('phone').value = localStorage.getItem('skynext_phone');
         if(localStorage.getItem('skynext_email')) document.getElementById('email').value = localStorage.getItem('skynext_email');
+        if(localStorage.getItem('skynext_license')) document.getElementById('license-key').value = localStorage.getItem('skynext_license');
     };
 
     async function verifyAndProceed() {
@@ -592,6 +593,7 @@
             if (result.trim() === "true") {
                 localStorage.setItem('skynext_fname', fn); localStorage.setItem('skynext_lname', ln);
                 localStorage.setItem('skynext_phone', ph); localStorage.setItem('skynext_email', em);
+                localStorage.setItem('skynext_license', key);
                 user = { name: fn + " " + ln, phone: ph, email: em };
                 document.getElementById('user-welcome').innerText = user.name;
                 buildWatermark(user.name, user.phone);
