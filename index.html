@@ -35,17 +35,12 @@
         .dashboard-btn { padding: 7px 14px; background: rgba(255,255,255,0.2); color: white; border-radius: 8px; font-size: 0.85rem; font-weight: 700; text-decoration: none; letter-spacing: 0.5px; white-space: nowrap; transition: 0.2s; }
         .dashboard-btn:hover { background: rgba(255,255,255,0.35); }
 
-        /* שעון ותאריך בהדר */
         .header-clock {
             display: flex; flex-direction: column; align-items: flex-start;
             margin-right: 15px; line-height: 1.2;
         }
-        #clock-time {
-            font-size: 1.4rem; font-weight: 900; letter-spacing: 1px;
-        }
-        #clock-date {
-            font-size: 0.75rem; font-weight: 600; opacity: 0.85;
-        }
+        #clock-time { font-size: 1.4rem; font-weight: 900; letter-spacing: 1px; }
+        #clock-date { font-size: 0.75rem; font-weight: 600; opacity: 0.85; }
 
         .container { width: 95%; max-width: 750px; margin: calc(var(--header-height) + 30px) auto 60px; padding: 0 15px; box-sizing: border-box; }
         .card { background: var(--card-white); border-radius: 15px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; box-sizing: border-box; }
@@ -90,27 +85,68 @@
         .progress-container { width: 100%; background-color: #eee; height: 12px; border-radius: 10px; margin-bottom: 25px; overflow: hidden; }
         .progress-bar { height: 100%; background-color: var(--primary-gold); width: 0%; transition: width 0.4s; }
         .q-text { font-size: 1.4rem; font-weight: bold; margin-bottom: 25px; line-height: 1.6; color: #333; }
-        .opt-btn { width: 100%; padding: 18px; border: 2px solid #eee; border-radius: 12px; background: #fff; cursor: pointer; text-align: right; font-size: 1.15rem; margin-bottom: 12px; transition: 0.2s; }
+
+        /* ===== תיקון 2: צביעת תשובות בזמן אמת בפרקי תרגול ===== */
+        .opt-btn {
+            width: 100%; padding: 18px; border: 2px solid #eee; border-radius: 12px;
+            background: #fff; cursor: pointer; text-align: right;
+            font-size: 1.15rem; margin-bottom: 12px; transition: 0.2s;
+        }
         .opt-btn.selected { background: #eff3ff; border-color: var(--sky-blue); font-weight: bold; }
+        /* צביעה בזמן אמת — נכון */
+        .opt-btn.live-correct {
+            background: #d4edda !important; border-color: var(--green) !important;
+            color: #155724 !important; font-weight: bold; cursor: default;
+        }
+        /* צביעה בזמן אמת — שגוי (מה שהחניך בחר) */
+        .opt-btn.live-wrong {
+            background: #f8d7da !important; border-color: var(--red) !important;
+            color: #721c24 !important; font-weight: bold; cursor: default;
+        }
+        /* תשובה נכונה — מוצגת גם כשהחניך טעה */
+        .opt-btn.live-show-correct {
+            background: #d4edda !important; border-color: var(--green) !important;
+            color: #155724 !important; cursor: default;
+        }
+        /* שאר התשובות לאחר בחירה — מאופסות */
+        .opt-btn.live-neutral { opacity: 0.55; cursor: default; }
+
+        /* הסבר בזמן אמת (Live feedback) */
+        .live-explanation-box {
+            background: #f0f3ff; border-right: 6px solid var(--primary-gold);
+            padding: 20px; margin-top: 15px; border-radius: 8px;
+            line-height: 1.6; animation: fadeInExp 0.3s ease;
+        }
+        @keyframes fadeInExp { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* כפתור הבא — מופיע בהדרגה לאחר עיכוב */
+        .btn-next-delayed {
+            animation: fadeInBtn 0.4s ease forwards;
+        }
+        @keyframes fadeInBtn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .btn-next-hidden {
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        /* ===== נקודות ניווט ===== */
         .dots-nav { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px; justify-content: center; }
         .dot { width: 32px; height: 32px; border-radius: 6px; background: #eee; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.8rem; transition: 0.2s; }
         .dot.answered { background: var(--sky-blue); color: white; }
         .dot.active { outline: 3px solid #333; transform: scale(1.1); font-weight: bold; }
+        /* ===== תיקון 1: נקודות ירוק/אדום בסקירה ===== */
+        .dot.correct   { background: var(--green) !important; color: white; }
+        .dot.incorrect { background: var(--red)   !important; color: white; }
+
         .explanation-box { background: #f0f3ff; border-right: 6px solid var(--primary-gold); padding: 20px; margin-top: 20px; border-radius: 8px; line-height: 1.6; }
         .result-chapter-badge { display: inline-block; padding: 6px 18px; border-radius: 20px; font-size: 0.9rem; font-weight: 700; margin-bottom: 15px; background: #f0f4ff; color: var(--sky-blue); }
 
-        /* באנר שחזור מבחן */
         #resume-banner {
             background: linear-gradient(135deg, #fff3cd, #ffe69c);
-            border: 2px solid #ffc107;
-            border-radius: 12px;
-            padding: 18px 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            flex-wrap: wrap;
+            border: 2px solid #ffc107; border-radius: 12px;
+            padding: 18px 20px; margin-bottom: 20px;
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
         }
         #resume-banner .resume-text { font-weight: 700; color: #856404; font-size: 1rem; }
         #resume-banner .resume-btns { display: flex; gap: 10px; }
@@ -138,7 +174,6 @@
 
         .sky-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: 35px; background-color: #1a1a1a; color: #aaa; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
 
-        /* RESOURCE TABS */
         .res-tab-btn {
             padding: 9px 16px; border-radius: 20px;
             border: 2px solid #e0e4ff; background: white;
@@ -185,18 +220,14 @@
 <div class="drone-container" id="main-drone"><img src="drone.png" class="drone-img"></div>
 
 <header class="sky-header">
-    <!-- לוגו בימין -->
     <div style="display:flex; align-items:center; gap:0;">
         <img src="logo.png" class="header-logo">
-        <!-- שעון ותאריך -->
         <div class="header-clock">
             <span id="clock-time">00:00:00</span>
             <span id="clock-date"></span>
         </div>
     </div>
-    <!-- טיימר במרכז -->
     <div id="header-timer" class="hidden">60:00</div>
-    <!-- התקדמות + Dashboard בשמאל -->
     <div style="display:flex; align-items:center; gap:10px;">
         <div id="header-progress" class="hidden">0/50</div>
         <a href="dashboard.html" class="dashboard-btn">Dashboard</a>
@@ -240,7 +271,6 @@
         <div class="progress-steps" id="progress-steps"></div>
         <div class="chapter-intro" id="chapter-intro"></div>
 
-        <!-- 3 פרקים בשורה אחת -->
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;">
             <div class="chapter-btn locked" id="btn-meteorology" onclick="startChapter('מטאורולוגיה')">
                 <div class="chapter-lock-icon" id="lock-meteorology">🔒</div>
@@ -265,7 +295,6 @@
             </div>
         </div>
 
-        <!-- מבחן מסכם בשורה שלו -->
         <div style="margin-bottom:30px;">
             <div class="chapter-btn locked final" id="btn-final" onclick="startChapter('מבחן מסכם')">
                 <div class="chapter-lock-icon" id="lock-final">🔒</div>
@@ -276,17 +305,14 @@
             </div>
         </div>
 
-        <!-- טאבי משאבים -->
         <div style="border-top:2px solid #eee; padding-top:20px;">
             <h3 style="text-align:center; color:#bf3424; font-size:1.5rem; margin-bottom:15px; font-weight:600;">📎 משאבים ומידע שימושי</h3>
-
             <div style="display:flex; gap:8px; margin-bottom:18px; flex-wrap:wrap; justify-content:center;">
                 <button class="res-tab-btn active" onclick="switchResTab('rta')">📋 רת"א וטפסים</button>
                 <button class="res-tab-btn" onclick="switchResTab('study')">📚 חומרי לימוד</button>
                 <button class="res-tab-btn" onclick="switchResTab('maps')">🗺️ מפות וטיסה</button>
                 <button class="res-tab-btn" onclick="switchResTab('apps')">📱 כלים שימושיים</button>
             </div>
-
             <div id="res-rta" class="res-tab-content active">
                 <div class="res-cards-grid">
                     <div class="res-card">
@@ -303,7 +329,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="res-study" class="res-tab-content">
                 <div class="res-cards-grid">
                     <div class="res-card">
@@ -320,7 +345,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="res-maps" class="res-tab-content">
                 <div class="res-cards-grid">
                     <div class="res-card">
@@ -337,7 +361,6 @@
                     </div>
                 </div>
             </div>
-
             <div id="res-apps" class="res-tab-content">
                 <div class="res-cards-grid">
                     <div class="res-card">
@@ -364,7 +387,6 @@
     </div>
 
     <div id="page-exam" class="card hidden">
-        <!-- באנר שחזור מבחן -->
         <div id="resume-banner" style="display:none;">
             <div class="resume-text">⚡ נמצא מבחן שלא הושלם — רוצה להמשיך מאיפה שעצרת?</div>
             <div class="resume-btns">
@@ -384,7 +406,7 @@
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" style="background:#eee; flex:1;" onclick="changeQ(-1)">הקודם</button>
             <button id="btn-return-results" class="btn hidden" style="background:var(--primary-gold); color:white; flex:1;" onclick="returnToResults()">חזרה לתוצאות</button>
-            <button class="btn" style="background:var(--sky-blue); color:white; flex:2;" onclick="changeQ(1)">הבא</button>
+            <button id="btn-next" class="btn" style="background:var(--sky-blue); color:white; flex:2;" onclick="changeQ(1)">הבא</button>
         </div>
         <div class="dots-nav" id="dots-nav"></div>
         <button id="btn-finish" class="btn btn-gold hidden" style="margin-top:25px;" onclick="finishCheck()">סיום והגשה</button>
@@ -431,7 +453,7 @@
     const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxPDakwRIs5GH8uwrba0PUzuufXhGBeOJktfxkiZ2LR4mGzkvRBDw_c38arHNElmlW4lw/exec";
     const PASS_SCORE = 90;
     const FINAL_PASS = 70;
-    const FINAL_TOTAL = 33; // מספר שאלות במבחן מסכם
+    const FINAL_TOTAL = 33;
     const EXAM_STORAGE_KEY = 'skynext_exam_state';
 
     let user = {};
@@ -446,6 +468,11 @@
     let timerId;
     let progress = {};
 
+    // ===== האם במצב למידה חי (תרגול פרק — לא מבחן מסכם, לא סקירה) =====
+    function isLiveLearnMode() {
+        return !isReviewMode && currentChapter !== 'מבחן מסכם';
+    }
+
     // ===== שעון ותאריך =====
     function updateClock() {
         const now = new Date();
@@ -453,12 +480,10 @@
         const m = String(now.getMinutes()).padStart(2, '0');
         const s = String(now.getSeconds()).padStart(2, '0');
         document.getElementById('clock-time').innerText = `${h}:${m}:${s}`;
-
         const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
         const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
         const dayName = days[now.getDay()];
-        const dateStr = `יום ${dayName}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-        document.getElementById('clock-date').innerText = dateStr;
+        document.getElementById('clock-date').innerText = `יום ${dayName}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
     }
     setInterval(updateClock, 1000);
     updateClock();
@@ -483,34 +508,22 @@
             const raw = localStorage.getItem(EXAM_STORAGE_KEY);
             if (!raw) return null;
             const state = JSON.parse(raw);
-            // תוקף: שמור עד 4 שעות
-            if (Date.now() - state.savedAt > 4 * 3600 * 1000) {
-                clearExamState();
-                return null;
-            }
-            // שייך לאותו משתמש
-            if (state.userPhone && user.phone && state.userPhone !== user.phone) {
-                clearExamState();
-                return null;
-            }
+            if (Date.now() - state.savedAt > 4 * 3600 * 1000) { clearExamState(); return null; }
+            if (state.userPhone && user.phone && state.userPhone !== user.phone) { clearExamState(); return null; }
             return state;
         } catch(e) { return null; }
     }
 
-    function clearExamState() {
-        localStorage.removeItem(EXAM_STORAGE_KEY);
-    }
+    function clearExamState() { localStorage.removeItem(EXAM_STORAGE_KEY); }
 
-    // ===== מניעת רענון במבחן =====
     window.addEventListener('beforeunload', function(e) {
         if (examStarted && !isReviewMode) {
-            saveExamState(); // שמור לפני היציאה
+            saveExamState();
             e.preventDefault();
             e.returnValue = 'המבחן עדיין פעיל. התשובות שלך נשמרו — תוכל להמשיך בכניסה הבאה.';
         }
     });
 
-    // חסימת F5 ו-Ctrl+R
     document.addEventListener('keydown', function(e) {
         if (examStarted && !isReviewMode) {
             if (e.key === 'F5' || (e.ctrlKey && e.key === 'r') || (e.ctrlKey && e.key === 'R')) {
@@ -589,16 +602,13 @@
         const ln = document.getElementById('lname').value.trim();
         const ph = document.getElementById('phone').value.trim();
         const em = document.getElementById('email').value.trim();
-
         if(!fn || !ln || !ph || !em || !key) { await showAlert("נא למלא את כל השדות!"); return; }
         const phoneRegex = /^05\d{8}$/;
         if(!phoneRegex.test(ph.replace(/-/g, ''))) { await showAlert("מספר הטלפון אינו תקין.\nיש להזין מספר ישראלי תקין (לדוגמה: 050-123-4567)"); return; }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
         if(!emailRegex.test(em)) { await showAlert("כתובת האימייל אינה תקינה."); return; }
-
         const btn = document.querySelector("#page-login .btn-gold");
         btn.innerText = "בודק רישיון..."; btn.disabled = true;
-
         try {
             const response = await fetch(`${GOOGLE_URL}?key=${encodeURIComponent(key)}`);
             const result = await response.text();
@@ -611,8 +621,6 @@
                 buildWatermark(user.name, user.phone);
                 document.getElementById('main-drone').classList.add('drone-observation');
                 await loadAllData();
-
-                // בדיקת מבחן שמור
                 const savedState = loadExamState();
                 if (savedState && savedState.chapter) {
                     hideAllPages();
@@ -644,11 +652,9 @@
         timeLeft = savedState.timeLeft;
         isReviewMode = false;
         examStarted = true;
-
         document.getElementById('exam-chapter-badge').innerText = currentChapter === 'מבחן מסכם' ? '🏆 מבחן מסכם סופי' : `📚 ${currentChapter}`;
         document.getElementById('header-timer').classList.remove('hidden');
         document.getElementById('header-progress').classList.remove('hidden');
-
         clearInterval(timerId);
         timerId = setInterval(() => {
             timeLeft--;
@@ -696,13 +702,11 @@
         const lawPassed = lawScore >= PASS_SCORE;
         const techPassed = techScore >= PASS_SCORE;
         const allPassed = metPassed && lawPassed && techPassed;
-
         setChapterBtn('meteorology', 'מטאורולוגיה', true, metPassed, metScore);
         setChapterBtn('law', 'חוקה', metPassed, lawPassed, lawScore);
         setChapterBtn('technical', 'ידע טכני', lawPassed, techPassed, techScore);
         setFinalBtn(allPassed);
         renderProgressSteps(metPassed, lawPassed, techPassed);
-
         const intro = document.getElementById('chapter-intro');
         if (allPassed) {
             intro.innerHTML = `🏆 כל הכבוד <strong>${user.name}</strong>! עברת את כל הפרקים. המבחן המסכם פתוח!`;
@@ -774,34 +778,21 @@
         return arr;
     }
 
-    // ===== בניית מבחן מסכם — 33 שאלות =====
     function buildFinalExam() {
-        const perChapter = Math.ceil(FINAL_TOTAL / 3); // 11 לכל פרק
+        const perChapter = Math.ceil(FINAL_TOTAL / 3);
         const chapters = ['מטאורולוגיה', 'חוקה', 'ידע טכני'];
         let pools = chapters.map(ch => shuffle(allQuestions.filter(q => q.chapter === ch)));
-
         let selected = [];
-        // שלב 1: קח perChapter מכל פרק
-        pools.forEach(pool => {
-            selected.push(...pool.slice(0, perChapter));
-        });
-
-        // שלב 2: אם חסרות שאלות להשלמת 33 — השלם מהפרקים הגדולים יותר
+        pools.forEach(pool => { selected.push(...pool.slice(0, perChapter)); });
         if (selected.length < FINAL_TOTAL) {
-            const leftover = pools.flatMap((pool, i) => pool.slice(perChapter));
-            const shuffledLeftover = shuffle(leftover);
-            const needed = FINAL_TOTAL - selected.length;
-            selected.push(...shuffledLeftover.slice(0, needed));
+            const leftover = shuffle(pools.flatMap((pool) => pool.slice(perChapter)));
+            selected.push(...leftover.slice(0, FINAL_TOTAL - selected.length));
         }
-
-        // שלב 3: אם עדיין חסר (בנק שאלות קטן מאד) — קח כמה שיש
         if (selected.length > FINAL_TOTAL) selected = selected.slice(0, FINAL_TOTAL);
-
         return shuffle(selected);
     }
 
     async function startChapter(chapterName) {
-        // אם יש מבחן שמור — שאל
         if (!isReviewMode) {
             const savedState = loadExamState();
             if (savedState && savedState.chapter) {
@@ -810,56 +801,56 @@
                 clearExamState();
             }
         }
-
         currentChapter = chapterName;
         isReviewMode = false;
         let filtered;
-
         if (chapterName === 'מבחן מסכם') {
             filtered = buildFinalExam();
         } else {
             filtered = shuffle(allQuestions.filter(q => q.chapter === chapterName));
         }
-
         if (!filtered || filtered.length === 0) {
             await showAlert(`לא נמצאו שאלות לפרק "${chapterName}". בדוק שהשאלות מסומנות נכון בגיליון.`);
             return;
         }
-
         questions = filtered.map(q => {
             const correctAnswerText = q.a[q.c];
             const shuffled = shuffle(q.a);
             return { ...q, a: shuffled, c: shuffled.indexOf(correctAnswerText) };
         });
-
         answers = new Array(questions.length).fill(null);
         current = 0; timeLeft = 3600; examStarted = true;
         document.getElementById('exam-chapter-badge').innerText = chapterName === 'מבחן מסכם' ? '🏆 מבחן מסכם סופי' : `📚 ${chapterName}`;
         document.getElementById('progress-bar').style.width = '0%';
         document.getElementById('resume-banner').style.display = 'none';
-
         hideAllPages();
         document.getElementById('page-exam').classList.remove('hidden');
         document.getElementById('header-timer').classList.remove('hidden');
         document.getElementById('header-progress').classList.remove('hidden');
-
         clearInterval(timerId);
         timerId = setInterval(() => {
             timeLeft--;
             let mm = Math.floor(timeLeft/60), ss = timeLeft%60;
             document.getElementById('header-timer').innerText = `${mm}:${ss<10?'0':''}${ss}`;
             if(timeLeft<=0) finishCheck();
-            // שמור מצב כל 30 שניות
             if (timeLeft % 30 === 0) saveExamState();
         }, 1000);
         saveExamState();
         showQuestion();
     }
 
+    // ===== showQuestion — עם תמיכה בלמידה חיה =====
     function showQuestion() {
         const q = questions[current];
         document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
         document.getElementById('btn-contact').classList.remove('hidden');
+
+        // כפתור הבא — אם שאלה כבר נענתה (חזרה לשאלה קודמת) — הצג מיד
+        const btnNext = document.getElementById('btn-next');
+        if (btnNext) {
+            btnNext.classList.remove('btn-next-hidden');
+            btnNext.classList.remove('btn-next-delayed');
+        }
 
         const imgBox = document.getElementById('question-image');
         if (q.image) {
@@ -868,33 +859,104 @@
         } else { imgBox.innerHTML = ''; imgBox.classList.add('hidden'); }
 
         document.getElementById('q-text').textContent = q.q;
-        const optBox = document.getElementById('options-box'); optBox.innerHTML = '';
+        const optBox = document.getElementById('options-box');
+        optBox.innerHTML = '';
+
+        const alreadyAnswered = answers[current] !== null;
+        const liveLearn = isLiveLearnMode();
+
         q.a.forEach((txt, i) => {
             const btn = document.createElement('button');
-            btn.className = `opt-btn ${answers[current] === i ? 'selected' : ''}`;
-            if(isReviewMode) {
-                if(i === q.c) btn.style.background = "#d4edda";
-                if(answers[current] === i && i !== q.c) btn.style.background = "#f8d7da";
+            btn.className = 'opt-btn';
+
+            if (isReviewMode) {
+                // ===== מצב סקירה (לאחר הגשה) =====
+                if (i === q.c) btn.style.background = "#d4edda";
+                if (answers[current] === i && i !== q.c) btn.style.background = "#f8d7da";
                 btn.disabled = true;
+
+            } else if (liveLearn && alreadyAnswered) {
+            // ===== מצב למידה חיה — כבר ענה, מציג צבעים =====
+            if (i === q.c) {
+                btn.classList.add('live-correct');
+            } else if (i === answers[current]) {
+                btn.classList.add('live-wrong');
             } else {
+                btn.classList.add('live-neutral');
+            }
+            btn.disabled = true;
+
+            } else if (liveLearn && !alreadyAnswered) {
+                // ===== מצב למידה חיה — טרם ענה =====
+                btn.onclick = () => {
+                    answers[current] = i;
+                    updateProgress();
+                    saveExamState();
+                    // מסתיר כפתור הבא מיד, ומציג אחרי 2.5 שניות
+                    const btnNext = document.getElementById('btn-next');
+                    btnNext.classList.add('btn-next-hidden');
+                    btnNext.classList.remove('btn-next-delayed');
+                    setTimeout(() => {
+                        btnNext.classList.remove('btn-next-hidden');
+                        btnNext.classList.add('btn-next-delayed');
+                    }, 2500);
+                    showQuestion(); // מרנדר מחדש עם צבעים והסבר
+                };
+
+            } else {
+                // ===== מבחן מסכם — רגיל =====
+                btn.className = `opt-btn ${answers[current] === i ? 'selected' : ''}`;
                 btn.onclick = () => {
                     answers[current] = i;
                     showQuestion();
                     updateProgress();
-                    saveExamState(); // שמור בכל בחירת תשובה
+                    saveExamState();
                 };
             }
-            btn.textContent = txt; optBox.appendChild(btn);
+
+            btn.textContent = txt;
+            optBox.appendChild(btn);
         });
 
+        // ===== הסבר =====
         const expBox = document.getElementById('explanation-container');
-        if(isReviewMode) {
+
+        if (isReviewMode) {
+            // סקירה לאחר הגשה
             expBox.innerHTML = `<div class="explanation-box"><strong>הסבר מקצועי:</strong> ${q.explanation}${q.link ? `<br><br><a href="${q.link}" target="_blank" style="display:inline-block; margin-top:10px; padding:12px 25px; background:#d4edda; color:#1a6b35; border-radius:10px; font-weight:bold; font-size:1rem; text-decoration:none; border: 2px solid #a8d5b5;">📖 למידע נוסף לחץ</a>` : ''}</div>`;
             expBox.classList.remove('hidden');
             document.getElementById('btn-return-results').classList.remove('hidden');
-        } else { expBox.classList.add('hidden'); document.getElementById('btn-return-results').classList.add('hidden'); }
 
-        document.getElementById('btn-finish').classList.toggle('hidden', current !== questions.length - 1 || isReviewMode);
+        } else if (liveLearn && alreadyAnswered) {
+            // למידה חיה — הצג הסבר מיד לאחר מענה
+            const isCorrect = answers[current] === q.c;
+            const feedbackEmoji = isCorrect ? '✅' : '❌';
+            const feedbackText = isCorrect ? 'כל הכבוד! ענית נכון.' : `טעות. התשובה הנכונה מסומנת בירוק.`;
+            expBox.innerHTML = `<div class="live-explanation-box">
+                <div style="font-size:1.1rem; font-weight:bold; margin-bottom:10px; color:${isCorrect ? '#155724' : '#721c24'};">
+                    ${feedbackEmoji} ${feedbackText}
+                </div>
+                <strong>הסבר:</strong> ${q.explanation}${q.link ? `<br><br><a href="${q.link}" target="_blank" style="display:inline-block; margin-top:10px; padding:10px 20px; background:#d4edda; color:#1a6b35; border-radius:10px; font-weight:bold; font-size:0.95rem; text-decoration:none; border: 2px solid #a8d5b5;">📖 למידע נוסף</a>` : ''}
+            </div>`;
+            expBox.classList.remove('hidden');
+            document.getElementById('btn-return-results').classList.add('hidden');
+
+        } else {
+            expBox.classList.add('hidden');
+            document.getElementById('btn-return-results').classList.add('hidden');
+        }
+
+        // כפתור "סיום" — רק בשאלה האחרונה ורק אם ענה (במצב מסכם) או תמיד (בלמידה חיה הכפתור מוסתר)
+        const isLastQ = current === questions.length - 1;
+        if (isReviewMode) {
+            document.getElementById('btn-finish').classList.add('hidden');
+        } else if (currentChapter === 'מבחן מסכם') {
+            document.getElementById('btn-finish').classList.toggle('hidden', !isLastQ);
+        } else {
+            // בפרקי תרגול — כפתור סיום מופיע בשאלה האחרונה רק לאחר מענה
+            document.getElementById('btn-finish').classList.toggle('hidden', !(isLastQ && alreadyAnswered));
+        }
+
         renderDots();
     }
 
@@ -903,14 +965,33 @@
         document.getElementById('progress-bar').style.width = (done / questions.length * 100) + "%";
     }
 
-    function changeQ(dir) { current = Math.max(0, Math.min(questions.length - 1, current + dir)); showQuestion(); }
+    function changeQ(dir) {
+        current = Math.max(0, Math.min(questions.length - 1, current + dir));
+        showQuestion();
+    }
 
+    // ===== תיקון 1: נקודות ירוק/אדום בסקירה + ירוק/אדום בלמידה חיה =====
     function renderDots() {
-        const nav = document.getElementById('dots-nav'); nav.innerHTML = '';
-        questions.forEach((_, i) => {
+        const nav = document.getElementById('dots-nav');
+        nav.innerHTML = '';
+        // הצג צבעים בסקירה (לאחר הגשה) — רק בפרקים לא במבחן מסכם
+        const showReviewColors = isReviewMode && currentChapter !== 'מבחן מסכם';
+        // הצג צבעים בלמידה חיה — לכל שאלה שנענתה
+        const showLiveColors = isLiveLearnMode();
+
+        questions.forEach((q, i) => {
             const d = document.createElement('div');
-            d.className = `dot ${answers[i] !== null ? 'answered' : ''} ${i === current ? 'active' : ''}`;
-            d.innerText = i + 1; d.onclick = () => { current = i; showQuestion(); };
+            let colorClass = '';
+
+            if (showReviewColors && answers[i] !== null) {
+                colorClass = answers[i] === q.c ? 'correct' : 'incorrect';
+            } else if (showLiveColors && answers[i] !== null) {
+                colorClass = answers[i] === q.c ? 'correct' : 'incorrect';
+            }
+
+            d.className = `dot ${answers[i] !== null ? 'answered' : ''} ${i === current ? 'active' : ''} ${colorClass}`;
+            d.innerText = i + 1;
+            d.onclick = () => { current = i; showQuestion(); };
             nav.appendChild(d);
         });
     }
@@ -921,13 +1002,12 @@
         if(await showConfirm(msg)) {
             clearInterval(timerId);
             examStarted = false;
-            clearExamState(); // מחק מצב שמור לאחר הגשה
+            clearExamState();
             let correct = 0;
             questions.forEach((q, i) => { if(answers[i] === q.c) correct++; });
             const score = Math.round((correct / questions.length) * 100);
             const passScore = currentChapter === 'מבחן מסכם' ? FINAL_PASS : PASS_SCORE;
             const passed = score >= passScore;
-
             if (currentChapter !== 'מבחן מסכם') {
                 fetch(`${GOOGLE_URL}?action=saveProgress&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&chapter=${encodeURIComponent(currentChapter)}&score=${score}`);
                 if (score > (progress[currentChapter] || 0)) progress[currentChapter] = score;
@@ -942,17 +1022,14 @@
         hideAllPages();
         document.getElementById('page-result').classList.remove('hidden');
         document.getElementById('header-timer').classList.add('hidden');
-        document.getElementById('header-progress').classList.add('hidden');
-
+        document.getElementById('header-progress').classList.remove('hidden');
         document.getElementById('res-chapter-badge').innerText = currentChapter === 'מבחן מסכם' ? '🏆 מבחן מסכם סופי' : `📚 ${currentChapter}`;
         document.getElementById('res-name').innerText = user.name;
         document.getElementById('res-score').innerText = score + "%";
         document.getElementById('res-score').style.color = passed ? "#2ecc71" : "#e74c3c";
-
         const resMsg = document.getElementById('res-message');
         const passMsg = document.getElementById('res-pass-msg');
         const retryBtn = document.getElementById('btn-retry');
-
         if (passed) {
             resMsg.innerHTML = currentChapter === 'מבחן מסכם' ? "🎉 מזל טוב! עברת את המבחן המסכם בהצלחה!" : `✅ כל הכבוד! עברת את פרק "${currentChapter}"!`;
             resMsg.style.color = "#2ecc71";
