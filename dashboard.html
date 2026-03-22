@@ -6,6 +6,7 @@
     <title>SkyNext - דשבורד מנהל</title>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --gold: #dbb04a; --gold-light: #f0d080; --blue: #637ef7;
@@ -295,30 +296,76 @@ function disableSecurityKeys(e) {
         <div class="panel" style="margin-top:20px;">
             <div class="admin-section-title">🔑 ניהול סיסמאות גישה למערכת</div>
             <div class="grid-2" style="margin-bottom:20px;">
-                <!-- יצירת סיסמה -->
+                <!-- יצירת סיסמה + שליחה בוואטסאפ -->
                 <div>
-                    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">צור סיסמה חדשה לחניך — אם תאריך תפוגה ריק, הסיסמה תקפה לצמיתות.</p>
-                    <input type="text" id="new-key-name" class="admin-input" placeholder="שם החניך (לתיעוד בלבד)">
+                    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">צור סיסמה אישית לחניך ושלח אוטומטית בוואטסאפ.</p>
+                    <input type="text" id="new-key-name" class="admin-input" placeholder="שם החניך">
+                    <input type="tel" id="new-key-phone" class="admin-input" placeholder="מספר טלפון (050-123-4567)">
+                    <input type="email" id="new-key-email" class="admin-input" placeholder="אימייל החניך (אופציונלי)">
                     <input type="date" id="new-key-expiry" class="admin-input" placeholder="תאריך תפוגה (אופציונלי)">
-                    <button class="admin-btn green" onclick="adminCreateKey()">➕ צור סיסמה חדשה</button>
+                    <button class="admin-btn green" onclick="adminCreateAndSend()" style="margin-bottom:8px;">📲 צור סיסמה ושלח בוואטסאפ + אימייל</button>
+                    <button class="admin-btn green" onclick="adminCreateKey()" style="opacity:0.75;">➕ צור סיסמה בלבד (ללא שליחה)</button>
                     <div id="feedback-keys" class="admin-feedback"></div>
                     <!-- תצוגת סיסמה שנוצרה -->
                     <div id="new-key-display" style="display:none; margin-top:15px; padding:15px; background:rgba(46,204,113,0.1); border:1px solid rgba(46,204,113,0.3); border-radius:10px;">
-                        <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:5px;">הסיסמה החדשה:</div>
+                        <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:8px;">✅ הסיסמה נוצרה:</div>
                         <div style="display:flex;align-items:center;gap:10px;">
-                            <div id="new-key-value" style="font-size:1.4rem;font-weight:900;color:var(--gold);letter-spacing:3px;flex:1;"></div>
-                            <button onclick="copyKey()" style="padding:8px 14px;background:var(--gold);color:#1a1a2e;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;">העתק</button>
+                            <div id="new-key-value" style="font-size:1.6rem;font-weight:900;color:var(--gold);letter-spacing:4px;flex:1;"></div>
+                            <button onclick="copyKey()" style="padding:8px 14px;background:var(--gold);color:#1a1a2e;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:Heebo,sans-serif;font-size:0.85rem;">📋 העתק</button>
                         </div>
+                        <div id="new-key-meta" style="color:var(--text-muted);font-size:0.8rem;margin-top:6px;"></div>
                     </div>
                 </div>
                 <!-- מחיקת סיסמה -->
                 <div>
-                    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">מחק סיסמה קיימת — החניך לא יוכל להתחבר יותר.</p>
+                    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">מחק סיסמה — החניך לא יוכל להתחבר יותר.</p>
                     <input type="text" id="delete-key-value" class="admin-input" placeholder="הזן סיסמה למחיקה">
                     <button class="admin-btn red" onclick="adminDeleteKey()">🗑️ מחק סיסמה</button>
                     <div id="feedback-delete-key" class="admin-feedback"></div>
                 </div>
             </div>
+
+            <!-- ייבוא מאקסל -->
+            <div style="border-top:1px solid var(--card-border);padding-top:20px;margin-bottom:20px;">
+                <div class="admin-section-title">📥 ייבוא רשימת חניכים מאקסל</div>
+                <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:15px;line-height:1.6;">
+                    העלה קובץ Excel עם עמודות: <strong style="color:var(--gold);">שם | טלפון | אימייל | תפוגה</strong> (תפוגה אופציונלי).
+                    המערכת תיצור סיסמה לכל חניך ותשלח אוטומטית.
+                </p>
+                <!-- כפתור הורדת תבנית -->
+                <button onclick="downloadTemplate()" style="padding:8px 16px;background:rgba(255,255,255,0.08);border:1px solid var(--card-border);border-radius:8px;color:var(--text-muted);cursor:pointer;font-family:Heebo,sans-serif;font-size:0.85rem;margin-bottom:15px;">
+                    📄 הורד תבנית אקסל לדוגמה
+                </button>
+                <!-- העלאת קובץ -->
+                <div style="border:2px dashed var(--card-border);border-radius:12px;padding:25px;text-align:center;cursor:pointer;transition:0.2s;" id="excel-drop-zone" onclick="document.getElementById('excel-file-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='var(--card-border)'" ondrop="handleExcelDrop(event)">
+                    <div style="font-size:2rem;margin-bottom:8px;">📊</div>
+                    <div style="color:var(--text-muted);font-size:0.9rem;">לחץ לבחירת קובץ Excel או גרור לכאן</div>
+                    <div style="color:var(--text-muted);font-size:0.8rem;margin-top:4px;">תומך ב .xlsx ו .xls</div>
+                </div>
+                <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none;" onchange="handleExcelFile(this.files[0])">
+
+                <!-- תצוגה מקדימה -->
+                <div id="excel-preview" style="display:none;margin-top:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                        <div style="color:var(--gold);font-weight:700;" id="excel-preview-title"></div>
+                        <div style="display:flex;gap:8px;">
+                            <input type="date" id="excel-global-expiry" class="admin-input" style="width:auto;margin:0;padding:8px 12px;font-size:0.85rem;" placeholder="תאריך תפוגה לכולם">
+                            <button class="admin-btn green" onclick="importAllStudents()" style="width:auto;padding:10px 20px;margin:0;" id="btn-import-all">🚀 ייבא והפעל הכל</button>
+                        </div>
+                    </div>
+                    <div id="excel-preview-table"></div>
+                    <div id="import-progress" style="display:none;margin-top:15px;padding:15px;background:rgba(99,126,247,0.1);border:1px solid rgba(99,126,247,0.3);border-radius:10px;">
+                        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                            <div class="spinner"></div>
+                            <span id="import-status" style="font-size:0.9rem;">מייבא...</span>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.1);height:8px;border-radius:4px;overflow:hidden;">
+                            <div id="import-bar" style="height:100%;background:var(--green);width:0%;transition:width 0.3s;border-radius:4px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- רשימת סיסמאות -->
             <div class="panel-title"><span>📋</span> רשימת סיסמאות פעילות</div>
             <div id="keys-list-wrap"><div class="loading"><div class="spinner"></div> טוען...</div></div>
@@ -783,39 +830,88 @@ function renderKeysList(keys) {
     const rows = keys.map(k => {
         const expired = k.expiry && new Date(k.expiry) < now;
         const expiryText = k.expiry ? new Date(k.expiry).toLocaleDateString('he-IL') : 'ללא תפוגה';
+        const phoneClean = (k.phone || '').replace(/\D/g, '');
+        const waBtn = phoneClean ? `<button onclick="sendKeyWhatsApp('${phoneClean}','${k.key}','${k.name||''}')" style="padding:5px 10px;background:#25d366;color:white;border:none;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif;font-size:0.8rem;margin-left:5px;">📲</button>` : '';
         return `<tr>
             <td style="font-weight:700;letter-spacing:2px;color:var(--gold);">${k.key}</td>
             <td>${k.name || '—'}</td>
+            <td style="direction:ltr;">${k.phone || '—'}${waBtn}</td>
             <td style="color:${expired ? 'var(--red)' : 'var(--green)'};">${expiryText}${expired ? ' ❌' : ' ✅'}</td>
             <td><button onclick="adminDeleteKeyDirect('${k.key}')" style="padding:5px 12px;background:var(--red);color:white;border:none;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif;font-size:0.8rem;">מחק</button></td>
         </tr>`;
     }).join('');
     document.getElementById('keys-list-wrap').innerHTML = `
         <table class="students-table">
-            <thead><tr><th>סיסמה</th><th>שם חניך</th><th>תפוגה</th><th>פעולה</th></tr></thead>
+            <thead><tr><th>סיסמה</th><th>שם חניך</th><th>טלפון</th><th>תפוגה</th><th>פעולה</th></tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
 }
 
-async function adminCreateKey() {
+function sendKeyWhatsApp(phone, key, name) {
+    const msg = `שלום ${name}!\n\n✈️ *SkyNext* — מערכת הכנה לבחינת כטב"מ\n\nקוד הגישה האישי שלך:\n\n🔑 *${key}*\n\nלכניסה למערכת:\nhttps://mentel5253.github.io/skynext/\n\nבהצלחה! 💪`;
+    window.open('https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + encodeURIComponent(msg), '_blank');
+}
+
+async function adminCreateAndSend() {
     const name = document.getElementById('new-key-name').value.trim();
+    const phone = document.getElementById('new-key-phone').value.trim().replace(/\D/g, '');
+    const email = document.getElementById('new-key-email').value.trim();
     const expiry = document.getElementById('new-key-expiry').value;
+    if (!name) { showFeedback('feedback-keys', '❌ הזן שם חניך', 'error'); return; }
+    if (!phone) { showFeedback('feedback-keys', '❌ הזן מספר טלפון', 'error'); return; }
     const key = generateKey();
     try {
-        await fetch(GOOGLE_URL + '?action=createKey&key=' + key + '&name=' + encodeURIComponent(name) + '&expiry=' + encodeURIComponent(expiry));
-        document.getElementById('new-key-value').innerText = key;
-        document.getElementById('new-key-display').style.display = 'block';
+        // שמור את הסיסמה
+        await fetch(GOOGLE_URL + '?action=createKey&key=' + key + '&name=' + encodeURIComponent(name) + '&expiry=' + encodeURIComponent(expiry) + '&phone=' + encodeURIComponent(phone));
+        showCreatedKey(key, name, expiry);
         document.getElementById('new-key-name').value = '';
+        document.getElementById('new-key-phone').value = '';
+        document.getElementById('new-key-email').value = '';
         document.getElementById('new-key-expiry').value = '';
-        showFeedback('feedback-keys', '✅ סיסמה נוצרה בהצלחה!', 'success');
+        loadKeys();
+        // שלח אימייל אם הוזן
+        if (email) {
+            const emailRes = await fetch(GOOGLE_URL + '?action=sendKeyEmail&email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(name) + '&key=' + key);
+            const emailResult = await emailRes.text();
+            if (emailResult.trim() === 'OK') {
+                showFeedback('feedback-keys', '✅ סיסמה נוצרה ואימייל נשלח!', 'success');
+            } else {
+                showFeedback('feedback-keys', '⚠️ סיסמה נוצרה אך האימייל נכשל', 'error');
+            }
+        }
+        // פתח וואטסאפ אוטומטית
+        setTimeout(() => sendKeyWhatsApp(phone, key, name), 800);
+    } catch(e) { showFeedback('feedback-keys', '❌ שגיאה ביצירת סיסמה', 'error'); }
+}
+
+async function adminCreateKey() {
+    const name = document.getElementById('new-key-name').value.trim();
+    const phone = document.getElementById('new-key-phone').value.trim().replace(/\D/g, '');
+    const expiry = document.getElementById('new-key-expiry').value;
+    if (!name) { showFeedback('feedback-keys', '❌ הזן שם חניך', 'error'); return; }
+    const key = generateKey();
+    try {
+        await fetch(GOOGLE_URL + '?action=createKey&key=' + key + '&name=' + encodeURIComponent(name) + '&expiry=' + encodeURIComponent(expiry) + '&phone=' + encodeURIComponent(phone));
+        showCreatedKey(key, name, expiry);
+        document.getElementById('new-key-name').value = '';
+        document.getElementById('new-key-phone').value = '';
+        document.getElementById('new-key-expiry').value = '';
         loadKeys();
     } catch(e) { showFeedback('feedback-keys', '❌ שגיאה ביצירת סיסמה', 'error'); }
+}
+
+function showCreatedKey(key, name, expiry) {
+    document.getElementById('new-key-value').innerText = key;
+    const meta = expiry ? `שם: ${name} | תפוגה: ${new Date(expiry).toLocaleDateString('he-IL')}` : `שם: ${name} | ללא תפוגה`;
+    document.getElementById('new-key-meta').innerText = meta;
+    document.getElementById('new-key-display').style.display = 'block';
+    showFeedback('feedback-keys', '✅ סיסמה נוצרה!', 'success');
 }
 
 function copyKey() {
     const key = document.getElementById('new-key-value').innerText;
     navigator.clipboard.writeText(key).then(() => {
-        showFeedback('feedback-keys', '✅ הסיסמה הועתקה!', 'success');
+        showFeedback('feedback-keys', '✅ הועתק ללוח!', 'success');
     });
 }
 
@@ -838,6 +934,148 @@ async function adminDeleteKeyDirect(key) {
         showFeedback('feedback-keys', '✅ הסיסמה נמחקה!', 'success');
         loadKeys();
     } catch(e) { showFeedback('feedback-keys', '❌ שגיאה במחיקה', 'error'); }
+// ===== ייבוא מאקסל =====
+let excelStudents = [];
+
+function downloadTemplate() {
+    const ws = XLSX.utils.aoa_to_sheet([
+        ['שם', 'טלפון', 'אימייל', 'תפוגה'],
+        ['ישראל ישראלי', '0501234567', 'israel@example.com', '2026-12-31'],
+        ['שרה כהן', '0509876543', 'sara@example.com', ''],
+    ]);
+    ws['!cols'] = [{wch:20},{wch:15},{wch:25},{wch:12}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'חניכים');
+    XLSX.writeFile(wb, 'תבנית_חניכים_SkyNext.xlsx');
+}
+
+function handleExcelDrop(e) {
+    e.preventDefault();
+    document.getElementById('excel-drop-zone').style.borderColor = 'var(--card-border)';
+    const file = e.dataTransfer.files[0];
+    if (file) handleExcelFile(file);
+}
+
+function handleExcelFile(file) {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const wb = XLSX.read(e.target.result, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+            parseExcelRows(rows);
+        } catch(err) {
+            showFeedback('feedback-keys', '❌ שגיאה בקריאת הקובץ', 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function parseExcelRows(rows) {
+    if (rows.length < 2) { showFeedback('feedback-keys', '❌ הקובץ ריק', 'error'); return; }
+    // דלג על שורת כותרות
+    const dataRows = rows.slice(1).filter(r => r[0] || r[1]);
+    excelStudents = dataRows.map(r => ({
+        name: (r[0] || '').toString().trim(),
+        phone: (r[1] || '').toString().replace(/\D/g, ''),
+        email: (r[2] || '').toString().trim(),
+        expiry: (r[3] || '').toString().trim(),
+        key: '',
+        status: 'ממתין'
+    })).filter(s => s.name && s.phone);
+
+    if (excelStudents.length === 0) { showFeedback('feedback-keys', '❌ לא נמצאו שורות תקינות', 'error'); return; }
+
+    renderExcelPreview();
+    document.getElementById('excel-preview').style.display = 'block';
+    document.getElementById('excel-preview-title').innerText = `נמצאו ${excelStudents.length} חניכים — בדוק ואשר ייבוא`;
+}
+
+function renderExcelPreview() {
+    const rows = excelStudents.map((s, i) => {
+        const statusColor = s.status === 'הושלם' ? 'var(--green)' : s.status === 'שגיאה' ? 'var(--red)' : 'var(--text-muted)';
+        return `<tr id="excel-row-${i}">
+            <td>${s.name}</td>
+            <td style="direction:ltr;">${s.phone}</td>
+            <td>${s.email || '—'}</td>
+            <td>${s.expiry || '—'}</td>
+            <td style="color:var(--gold);letter-spacing:2px;font-weight:700;">${s.key || '—'}</td>
+            <td style="color:${statusColor};">${s.status}</td>
+        </tr>`;
+    }).join('');
+    document.getElementById('excel-preview-table').innerHTML = `
+        <table class="students-table">
+            <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>תפוגה</th><th>סיסמה</th><th>סטטוס</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+}
+
+async function importAllStudents() {
+    const globalExpiry = document.getElementById('excel-global-expiry').value;
+    const btn = document.getElementById('btn-import-all');
+    btn.disabled = true;
+    btn.innerText = '⏳ מייבא...';
+
+    document.getElementById('import-progress').style.display = 'block';
+    const total = excelStudents.length;
+
+    for (let i = 0; i < total; i++) {
+        const s = excelStudents[i];
+        const expiry = s.expiry || globalExpiry || '';
+        const key = generateKey();
+
+        document.getElementById('import-status').innerText = `מעבד ${i+1} מתוך ${total}: ${s.name}`;
+        document.getElementById('import-bar').style.width = ((i / total) * 100) + '%';
+
+        try {
+            // שמור סיסמה
+            await fetch(GOOGLE_URL + '?action=createKey&key=' + key +
+                '&name=' + encodeURIComponent(s.name) +
+                '&expiry=' + encodeURIComponent(expiry) +
+                '&phone=' + encodeURIComponent(s.phone));
+
+            // שלח אימייל אם יש
+            if (s.email) {
+                await fetch(GOOGLE_URL + '?action=sendKeyEmail&email=' + encodeURIComponent(s.email) +
+                    '&name=' + encodeURIComponent(s.name) + '&key=' + key);
+            }
+
+            excelStudents[i].key = key;
+            excelStudents[i].status = s.email ? '✅ נשלח אימייל' : '✅ נוצר';
+
+        } catch(e) {
+            excelStudents[i].status = 'שגיאה';
+        }
+
+        renderExcelPreview();
+        // השהייה קצרה בין בקשות
+        await new Promise(r => setTimeout(r, 400));
+    }
+
+    document.getElementById('import-bar').style.width = '100%';
+    document.getElementById('import-status').innerText = `✅ הסתיים! ${total} חניכים יובאו בהצלחה`;
+    btn.innerText = '✅ הסתיים';
+
+    // הצג כפתור שליחת וואטסאפ לכולם
+    const waBtn = document.createElement('button');
+    waBtn.className = 'admin-btn green';
+    waBtn.style.marginTop = '10px';
+    waBtn.innerText = '📲 שלח וואטסאפ לכולם ברצף';
+    waBtn.onclick = sendWhatsAppToAll;
+    document.getElementById('import-progress').appendChild(waBtn);
+
+    loadKeys();
+}
+
+async function sendWhatsAppToAll() {
+    for (let i = 0; i < excelStudents.length; i++) {
+        const s = excelStudents[i];
+        if (!s.phone || !s.key) continue;
+        sendKeyWhatsApp(s.phone, s.key, s.name);
+        // המתן 3 שניות בין כל שליחה כדי שהמשתמש יספיק לשלוח
+        await new Promise(r => setTimeout(r, 3000));
+    }
 }
 </script>
 </body>
