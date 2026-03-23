@@ -188,11 +188,12 @@ function disableSecurityKeys(e) {
 
     <!-- טאב 1: סטטיסטיקות — מבוסס Progress -->
     <div id="tab-stats" class="tab-content active">
-        <div class="kpi-grid">
+        <div class="kpi-grid" style="grid-template-columns:repeat(5,1fr);">
             <div class="kpi-card gold"><div class="kpi-icon">📊</div><div class="kpi-value" id="kpi-avg">--</div><div class="kpi-label">ממוצע כיתתי כולל</div></div>
             <div class="kpi-card blue"><div class="kpi-icon">👥</div><div class="kpi-value" id="kpi-total">--</div><div class="kpi-label">סה"כ חניכים</div></div>
             <div class="kpi-card green"><div class="kpi-icon">🏆</div><div class="kpi-value" id="kpi-pass">--</div><div class="kpi-label">מוכנים לבחינה</div></div>
             <div class="kpi-card orange"><div class="kpi-icon">📝</div><div class="kpi-value" id="kpi-trainings">--</div><div class="kpi-label">סה"כ תרגולים</div></div>
+            <div class="kpi-card blue"><div class="kpi-icon">✈️</div><div class="kpi-value" id="kpi-final-pass">--</div><div class="kpi-label">עברו מבחן מסכם</div></div>
         </div>
         <div class="grid-3">
             <div class="panel">
@@ -215,6 +216,11 @@ function disableSecurityKeys(e) {
                 <div class="panel-title" style="margin-top:25px;"><span>📊</span> התפלגות ציונים לפי פרק</div>
                 <div id="chapter-avg-wrap"></div>
             </div>
+        </div>
+        <!-- מבחן מסכם -->
+        <div class="panel" style="margin-bottom:20px;">
+            <div class="panel-title"><span>✈️</span> תוצאות מבחן מסכם</div>
+            <div id="final-exam-wrap"><div style="color:var(--text-muted);font-size:0.9rem;">אין נתוני מבחן מסכם עדיין.</div></div>
         </div>
     </div>
 
@@ -302,7 +308,11 @@ function disableSecurityKeys(e) {
                     <input type="text" id="new-key-name" class="admin-input" placeholder="שם החניך">
                     <input type="tel" id="new-key-phone" class="admin-input" placeholder="מספר טלפון (050-123-4567)">
                     <input type="email" id="new-key-email" class="admin-input" placeholder="אימייל החניך (אופציונלי)">
-                    <input type="date" id="new-key-expiry" class="admin-input" placeholder="תאריך תפוגה (אופציונלי)">
+                    <div style="position:relative; margin-bottom:10px;">
+                        <input type="date" id="new-key-expiry" class="admin-input" style="margin-bottom:0; padding-left:40px; cursor:pointer;" title="בחר תאריך תפוגה">
+                        <span style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:1.1rem; pointer-events:none;">📅</span>
+                        <label style="position:absolute; right:15px; top:50%; transform:translateY(-50%); font-size:0.8rem; color:var(--text-muted); pointer-events:none;" id="expiry-label">תאריך תפוגה (אופציונלי)</label>
+                    </div>
                     <button class="admin-btn green" onclick="adminCreateAndSend()" style="margin-bottom:8px;">📲 צור סיסמה ושלח בוואטסאפ + אימייל</button>
                     <button class="admin-btn green" onclick="adminCreateKey()" style="opacity:0.75;">➕ צור סיסמה בלבד (ללא שליחה)</button>
                     <div id="feedback-keys" class="admin-feedback"></div>
@@ -459,18 +469,17 @@ async function loadData() {
 // ===== סטטיסטיקות מבוססות Progress =====
 function renderStatsFromProgress(progressData) {
     if (!progressData || progressData.length === 0) {
-        document.getElementById('kpi-avg').innerText = '--';
-        document.getElementById('kpi-total').innerText = '0';
-        document.getElementById('kpi-pass').innerText = '0';
-        document.getElementById('kpi-trainings').innerText = '0';
+        ['kpi-avg','kpi-total','kpi-pass','kpi-trainings','kpi-final-pass'].forEach(id => {
+            const el = document.getElementById(id); if(el) el.innerText = '0';
+        });
         document.getElementById('students-table-wrap').innerHTML = '<div style="color:var(--text-muted);padding:20px;">אין נתונים עדיין.</div>';
         document.getElementById('leaderboard-list').innerHTML = '';
         document.getElementById('alerts-wrap').innerHTML = '';
         document.getElementById('chapter-avg-wrap').innerHTML = '';
+        document.getElementById('final-exam-wrap').innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;">אין נתוני מבחן מסכם עדיין.</div>';
         return;
     }
 
-    // חישוב ממוצע כולל לכל חניך (ממוצע 3 הפרקים)
     const studentsWithAvg = progressData.map(p => {
         const scores = [p.meteorology, p.law, p.technical].filter(s => s > 0);
         const avg = scores.length > 0 ? scores.reduce((a,b) => a+b, 0) / scores.length : 0;
@@ -482,16 +491,22 @@ function renderStatsFromProgress(progressData) {
     const totalTrainings = progressData.reduce((sum, p) => sum + (p.trainingCount || 0), 0);
     const classAvg = Math.round(studentsWithAvg.reduce((sum, p) => sum + p.avg, 0) / totalStudents);
 
+    // מבחן מסכם — רק מי שניגש (finalExam >= 0, לא -1)
+    const finalExamStudents = progressData.filter(p => p.finalExam >= 0);
+    const finalPassStudents = finalExamStudents.filter(p => p.finalExam >= 70).length;
+
     document.getElementById('kpi-avg').innerText = classAvg + '%';
     document.getElementById('kpi-total').innerText = totalStudents;
     document.getElementById('kpi-pass').innerText = readyStudents;
     document.getElementById('kpi-trainings').innerText = totalTrainings;
+    document.getElementById('kpi-final-pass').innerText = finalPassStudents + '/' + finalExamStudents.length;
 
     renderChartFromProgress(studentsWithAvg);
     renderLeaderboardFromProgress(studentsWithAvg);
     renderFullTable(studentsWithAvg);
     renderAlertsFromProgress(studentsWithAvg);
     renderChapterAvg(progressData);
+    renderFinalExamStats(finalExamStudents);
 }
 
 function renderChartFromProgress(students) {
@@ -706,9 +721,8 @@ async function adminUnlockAll() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
     try {
-        await Promise.all(['מטאורולוגיה','חוקה','ידע טכני'].map(ch =>
-            fetch(GOOGLE_URL + '?action=saveProgress&phone=' + phone + '&name=' + encodeURIComponent('פתיחה ידנית') + '&chapter=' + encodeURIComponent(ch) + '&score=100')));
-        showFeedback('feedback-unlock', 'כל הפרקים נפתחו!', 'success');
+        await fetch(GOOGLE_URL + '?action=unlockChapters&phone=' + phone + '&name=' + encodeURIComponent('פתיחה ידנית'));
+        showFeedback('feedback-unlock', '✅ כל הפרקים נפתחו!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-unlock', 'שגיאה בחיבור לשרת', 'error'); }
 }
@@ -717,9 +731,8 @@ async function adminOpenFinal() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
     try {
-        await Promise.all(['מטאורולוגיה','חוקה','ידע טכני'].map(ch =>
-            fetch(GOOGLE_URL + '?action=saveProgress&phone=' + phone + '&name=' + encodeURIComponent('פתיחה ידנית') + '&chapter=' + encodeURIComponent(ch) + '&score=100')));
-        showFeedback('feedback-unlock', 'מבחן מסכם נפתח!', 'success');
+        await fetch(GOOGLE_URL + '?action=unlockFinal&phone=' + phone + '&name=' + encodeURIComponent('פתיחה ידנית'));
+        showFeedback('feedback-unlock', '✅ מבחן מסכם נפתח בלבד!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-unlock', 'שגיאה בחיבור לשרת', 'error'); }
 }
@@ -729,9 +742,8 @@ async function adminLockAll() {
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
     if (!confirm('לנעול את כל הפרקים עבור ' + phone + '?')) return;
     try {
-        await Promise.all(['מטאורולוגיה','חוקה','ידע טכני'].map(ch =>
-            fetch(GOOGLE_URL + '?action=resetProgress&phone=' + phone + '&chapter=' + encodeURIComponent(ch))));
-        showFeedback('feedback-unlock', 'כל הפרקים ננעלו!', 'success');
+        await fetch(GOOGLE_URL + '?action=lockChapters&phone=' + phone);
+        showFeedback('feedback-unlock', '🔒 כל הפרקים ננעלו!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-unlock', 'שגיאה בחיבור לשרת', 'error'); }
 }
@@ -741,8 +753,8 @@ async function adminLockFinal() {
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
     if (!confirm('לנעול את המבחן המסכם עבור ' + phone + '?')) return;
     try {
-        await fetch(GOOGLE_URL + '?action=resetProgress&phone=' + phone + '&chapter=' + encodeURIComponent('ידע טכני'));
-        showFeedback('feedback-unlock', 'המבחן המסכם ננעל!', 'success');
+        await fetch(GOOGLE_URL + '?action=lockFinal&phone=' + phone);
+        showFeedback('feedback-unlock', '🔒 המבחן המסכם ננעל בלבד!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-unlock', 'שגיאה בחיבור לשרת', 'error'); }
 }
@@ -763,14 +775,9 @@ async function adminUnlockAllStudents() {
     if (!confirm('לפתוח את כל הפרקים לכל החניכים?')) return;
     if (!allProgressData || allProgressData.length === 0) { showFeedback('feedback-global', 'אין חניכים במערכת', 'error'); return; }
     try {
-        const promises = [];
-        allProgressData.forEach(p => {
-            ['מטאורולוגיה','חוקה','ידע טכני'].forEach(ch => {
-                promises.push(fetch(GOOGLE_URL + '?action=saveProgress&phone=' + p.phone + '&name=' + encodeURIComponent(p.name) + '&chapter=' + encodeURIComponent(ch) + '&score=100'));
-            });
-        });
-        await Promise.all(promises);
-        showFeedback('feedback-global', 'נפתח לכל ' + allProgressData.length + ' החניכים!', 'success');
+        await Promise.all(allProgressData.map(p =>
+            fetch(GOOGLE_URL + '?action=unlockChapters&phone=' + p.phone + '&name=' + encodeURIComponent(p.name))));
+        showFeedback('feedback-global', '✅ נפתח לכל ' + allProgressData.length + ' החניכים!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-global', 'שגיאה בחיבור לשרת', 'error'); }
 }
@@ -779,14 +786,9 @@ async function adminLockAllStudents() {
     if (!confirm('לנעול את כל הפרקים לכל החניכים?')) return;
     if (!allProgressData || allProgressData.length === 0) { showFeedback('feedback-global', 'אין חניכים במערכת', 'error'); return; }
     try {
-        const promises = [];
-        allProgressData.forEach(p => {
-            ['מטאורולוגיה','חוקה','ידע טכני'].forEach(ch => {
-                promises.push(fetch(GOOGLE_URL + '?action=resetProgress&phone=' + p.phone + '&chapter=' + encodeURIComponent(ch)));
-            });
-        });
-        await Promise.all(promises);
-        showFeedback('feedback-global', 'כל הפרקים ננעלו!', 'success');
+        await Promise.all(allProgressData.map(p =>
+            fetch(GOOGLE_URL + '?action=lockChapters&phone=' + p.phone)));
+        showFeedback('feedback-global', '🔒 כל הפרקים ננעלו!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-global', 'שגיאה בחיבור לשרת', 'error'); }
 }
@@ -811,13 +813,15 @@ function generateKey() {
 }
 
 async function loadKeys() {
+    const wrap = document.getElementById('keys-list-wrap');
+    if (!wrap) return;
     try {
         const res = await fetch(GOOGLE_URL + '?action=getKeys');
         const text = await res.text();
         const keys = JSON.parse(text);
         renderKeysList(keys);
     } catch(e) {
-        document.getElementById('keys-list-wrap').innerHTML = '<div style="color:var(--text-muted);padding:10px;">שגיאה בטעינת הסיסמאות.</div>';
+        if (wrap) wrap.innerHTML = '<div style="color:var(--text-muted);padding:10px;">שגיאה בטעינת הסיסמאות.</div>';
     }
 }
 
@@ -829,20 +833,33 @@ function renderKeysList(keys) {
     const now = new Date();
     const rows = keys.map(k => {
         const expired = k.expiry && new Date(k.expiry) < now;
-        const expiryText = k.expiry ? new Date(k.expiry).toLocaleDateString('he-IL') : 'ללא תפוגה';
+        const expiryVal = k.expiry || '';
         const phoneClean = (k.phone || '').replace(/\D/g, '');
         const waBtn = phoneClean ? `<button onclick="sendKeyWhatsApp('${phoneClean}','${k.key}','${k.name||''}')" style="padding:5px 10px;background:#25d366;color:white;border:none;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif;font-size:0.8rem;margin-left:5px;">📲</button>` : '';
         return `<tr>
             <td style="font-weight:700;letter-spacing:2px;color:var(--gold);">${k.key}</td>
             <td>${k.name || '—'}</td>
             <td style="direction:ltr;">${k.phone || '—'}${waBtn}</td>
-            <td style="color:${expired ? 'var(--red)' : 'var(--green)'};">${expiryText}${expired ? ' ❌' : ' ✅'}</td>
+            <td>
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <div style="position:relative;">
+                        <input type="date" value="${expiryVal}"
+                            onchange="updateKeyExpiry('${k.key}', this.value)"
+                            style="background:rgba(255,255,255,0.06);border:1px solid var(--card-border);border-radius:8px;color:white;padding:6px 10px 6px 32px;font-family:Heebo,sans-serif;font-size:0.85rem;cursor:pointer;width:160px;"
+                            title="לחץ לשינוי תאריך תפוגה">
+                        <span style="position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:0.9rem;pointer-events:none;">📅</span>
+                    </div>
+                    <span style="color:${expired ? 'var(--red)' : expiryVal ? 'var(--green)' : 'var(--text-muted)'};font-size:0.8rem;">
+                        ${expired ? '❌ פג' : expiryVal ? '✅' : 'ללא'}
+                    </span>
+                </div>
+            </td>
             <td><button onclick="adminDeleteKeyDirect('${k.key}')" style="padding:5px 12px;background:var(--red);color:white;border:none;border-radius:6px;cursor:pointer;font-family:Heebo,sans-serif;font-size:0.8rem;">מחק</button></td>
         </tr>`;
     }).join('');
     document.getElementById('keys-list-wrap').innerHTML = `
         <table class="students-table">
-            <thead><tr><th>סיסמה</th><th>שם חניך</th><th>טלפון</th><th>תפוגה</th><th>פעולה</th></tr></thead>
+            <thead><tr><th>סיסמה</th><th>שם חניך</th><th>טלפון</th><th>תאריך תפוגה</th><th>פעולה</th></tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
 }
@@ -927,6 +944,14 @@ async function adminDeleteKey() {
     } catch(e) { showFeedback('feedback-delete-key', '❌ שגיאה במחיקה', 'error'); }
 }
 
+async function updateKeyExpiry(key, newExpiry) {
+    try {
+        await fetch(GOOGLE_URL + '?action=updateKeyExpiry&key=' + encodeURIComponent(key) + '&expiry=' + encodeURIComponent(newExpiry));
+        showFeedback('feedback-keys', '✅ תאריך תפוגה עודכן!', 'success');
+        loadKeys();
+    } catch(e) { showFeedback('feedback-keys', '❌ שגיאה בעדכון', 'error'); }
+}
+
 async function adminDeleteKeyDirect(key) {
     if (!confirm('למחוק את הסיסמה ' + key + '?')) return;
     try {
@@ -940,13 +965,20 @@ async function adminDeleteKeyDirect(key) {
 let excelStudents = [];
 
 function downloadTemplate() {
+    const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
         ['שם', 'טלפון', 'אימייל', 'תפוגה'],
-        ['ישראל ישראלי', '0501234567', 'israel@example.com', '2026-12-31'],
+        ['ישראל ישראלי', '0501234567', 'israel@example.com', new Date('2026-12-31')],
         ['שרה כהן', '0509876543', 'sara@example.com', ''],
     ]);
-    ws['!cols'] = [{wch:20},{wch:15},{wch:25},{wch:12}];
-    const wb = XLSX.utils.book_new();
+    // פורמט תאריך לעמודה D
+    ws['!cols'] = [{wch:20},{wch:15},{wch:25},{wch:14}];
+    if (!ws['!formats']) ws['!formats'] = {};
+    // הגדר פורמט תאריך לתאים D2 ו-D3
+    const dateFmt = 'dd/mm/yyyy';
+    if (ws['D2']) { ws['D2'].t = 'd'; ws['D2'].z = dateFmt; }
+    if (ws['D3']) { ws['D3'].t = 'd'; ws['D3'].z = dateFmt; }
+    // הגדר את רוחב העמודות
     XLSX.utils.book_append_sheet(wb, ws, 'חניכים');
     XLSX.writeFile(wb, 'תבנית_חניכים_SkyNext.xlsx');
 }
@@ -974,21 +1006,63 @@ function handleExcelFile(file) {
     reader.readAsArrayBuffer(file);
 }
 
+function renderFinalExamStats(finalStudents) {
+    const wrap = document.getElementById('final-exam-wrap');
+    if (!wrap) return;
+    if (!finalStudents || finalStudents.length === 0) {
+        wrap.innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;">אף חניך עדיין לא ניגש למבחן המסכם.</div>';
+        return;
+    }
+    const sorted = [...finalStudents].sort((a,b) => b.finalExam - a.finalExam);
+    const rows = sorted.map((p, i) => {
+        const score = Math.round(p.finalExam);
+        const passed = score >= 70;
+        const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
+        const barColor = passed ? '#2ecc71' : '#e74c3c';
+        return `<tr>
+            <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
+            <td>${p.name || '—'}</td>
+            <td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${score}%;background:${barColor};"></div></div><div class="score-text ${passed?'pass':'fail'}">${score}%</div></div></td>
+            <td style="text-align:center;"><span style="color:${passed?'var(--green)':'var(--red)'};">${passed?'✅ עבר':'❌ נכשל'}</span></td>
+        </tr>`;
+    }).join('');
+    wrap.innerHTML = `
+        <table class="students-table">
+            <thead><tr><th>#</th><th>שם חניך</th><th>ציון</th><th style="text-align:center;">תוצאה</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+}
+
 function parseExcelRows(rows) {
     if (rows.length < 2) { showFeedback('feedback-keys', '❌ הקובץ ריק', 'error'); return; }
-    // דלג על שורת כותרות
     const dataRows = rows.slice(1).filter(r => r[0] || r[1]);
-    excelStudents = dataRows.map(r => ({
-        name: (r[0] || '').toString().trim(),
-        phone: (r[1] || '').toString().replace(/\D/g, ''),
-        email: (r[2] || '').toString().trim(),
-        expiry: (r[3] || '').toString().trim(),
-        key: '',
-        status: 'ממתין'
-    })).filter(s => s.name && s.phone);
+    excelStudents = dataRows.map(r => {
+        // תמיכה בפורמט חדש: A=שם, B=טלפון, C=אימייל, D=שנה, E=חודש, F=יום
+        // ובפורמט ישן: A=שם, B=טלפון, C=אימייל, D=תאריך
+        let expiry = '';
+        if (r[3] && r[4] && r[5]) {
+            // פורמט חדש עם 3 עמודות נפרדות
+            const year = parseInt(r[3]) || 0;
+            const month = parseInt(r[4]) || 0;
+            const day = parseInt(r[5]) || 0;
+            if (year && month && day) {
+                expiry = year + '-' + String(month).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+            }
+        } else if (r[3]) {
+            // פורמט ישן — תאריך ישיר
+            expiry = r[3].toString().trim();
+        }
+        return {
+            name: (r[0] || '').toString().trim(),
+            phone: (r[1] || '').toString().replace(/\D/g, ''),
+            email: (r[2] || '').toString().trim(),
+            expiry: expiry,
+            key: '',
+            status: 'ממתין'
+        };
+    }).filter(s => s.name && s.phone);
 
     if (excelStudents.length === 0) { showFeedback('feedback-keys', '❌ לא נמצאו שורות תקינות', 'error'); return; }
-
     renderExcelPreview();
     document.getElementById('excel-preview').style.display = 'block';
     document.getElementById('excel-preview-title').innerText = `נמצאו ${excelStudents.length} חניכים — בדוק ואשר ייבוא`;
