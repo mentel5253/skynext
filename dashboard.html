@@ -710,9 +710,17 @@ function openPrint(html) {
 // ===== ADMIN =====
 function showFeedback(id, msg, type) {
     const el = document.getElementById(id);
+    if (!el) return;
     el.innerText = msg;
     el.className = 'admin-feedback ' + type;
-    setTimeout(() => { el.className = 'admin-feedback'; el.style.display = 'none'; }, 4000);
+    el.style.display = 'block';
+    el.style.opacity = '1';
+    clearTimeout(el._feedbackTimer);
+    el._feedbackTimer = setTimeout(() => {
+        el.style.display = 'none';
+        el.innerText = '';
+        el.className = 'admin-feedback';
+    }, 4000);
 }
 
 function normalizePhone(raw) { return raw.replace(/\D/g, ''); }

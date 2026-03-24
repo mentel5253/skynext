@@ -22,6 +22,10 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-user-select: none; user-select: none;
         }
+        input, textarea, select {
+            -webkit-user-select: text !important;
+            user-select: text !important;
+        }
 
         .sky-header { 
             position: fixed; top: 0; left: 0; width: 100%; height: var(--header-height); 
@@ -244,7 +248,7 @@
             <input type="text" id="lname" placeholder="שם משפחה">
             <input type="tel" id="phone" placeholder="מספר טלפון" class="full-width" oninput="formatPhone(this)" maxlength="12">
             <input type="email" id="email" placeholder="אימייל" class="full-width">
-            <input type="password" id="license-key" placeholder="קוד רישיון גישה" class="full-width license-field">
+            <input type="password" id="license-key" placeholder="קוד רישיון גישה" class="full-width license-field" style="-webkit-user-select:text; user-select:text;">
         </div>
         <button class="btn btn-gold" onclick="verifyAndProceed()">אימות רישיון והמשך</button>
     </div>
@@ -545,6 +549,11 @@
     }
 
     function disableSecurityKeys(e) {
+        // אפשר הדבקה בשדות קלט
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) {
+            if (e.ctrlKey && (e.key === 'v' || e.key === 'V')) return true;
+            if (e.ctrlKey && (e.key === 'a' || e.key === 'A')) return true;
+        }
         if (e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'u' || e.key === 'p' || e.key === 's')) return false;
         if (e.key === 'F12' || e.keyCode === 123) return false;
     }
@@ -749,11 +758,20 @@
         const statusEl = document.getElementById('status-final');
         const lockEl = document.getElementById('lock-final');
         const scoreEl = document.getElementById('score-final');
-        // פתוח אם: כל הפרקים עברו, OR נפתח ידנית (flag >= 0)
-        const finalFlag = progress['מבחן מסכם'];
-        const isOpen = allChaptersPassed || (finalFlag !== undefined && finalFlag !== null && finalFlag >= 0);
         btn.className = 'chapter-btn final';
         btn.onclick = null;
+
+        const finalFlag = progress['מבחן מסכם'];
+        // אם flag קיים (לא undefined/null) — הוא גובר על הפרקים
+        // flag = -1 → נעול, flag >= 0 → פתוח
+        // אם flag לא קיים כלל — מסתמכים על הפרקים
+        let isOpen;
+        if (finalFlag !== undefined && finalFlag !== null) {
+            isOpen = finalFlag >= 0;
+        } else {
+            isOpen = allChaptersPassed;
+        }
+
         if (isOpen) {
             btn.classList.add('active');
             statusEl.className = 'chapter-status open';
@@ -765,6 +783,7 @@
             statusEl.className = 'chapter-status locked';
             statusEl.innerText = '🔒 נפתח לאחר מעבר כל הפרקים';
             lockEl.innerText = '🔒';
+            if (scoreEl) scoreEl.innerText = '';
         }
     }
 
