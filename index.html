@@ -453,7 +453,7 @@
 <footer class="sky-footer"><span>© 2026 SkyNext | מוגן בזכויות יוצרים</span></footer>
 
 <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxj4w3zVA7_1MRWdq7yZyZMWxQQawFN9Uf18JG-oFwB-aG4SU0nNS5N8Q3k9U5r_1g1Gg/exec";
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxn1H3HtfW1iApA1ElsUzBXmkJLTXLBBNhYMbFpw2sbDCSnfSFktks8rws3eE5LOfj-nA/exec";
     const PASS_SCORE = 90;
     const FINAL_PASS = 70;
     const FINAL_TOTAL = 33;
@@ -744,19 +744,26 @@
         }
     }
 
-    function setFinalBtn(isOpen) {
+    function setFinalBtn(allChaptersPassed) {
         const btn = document.getElementById('btn-final');
         const statusEl = document.getElementById('status-final');
         const lockEl = document.getElementById('lock-final');
+        const scoreEl = document.getElementById('score-final');
+        // פתוח אם: כל הפרקים עברו, OR נפתח ידנית (flag >= 0)
+        const finalFlag = progress['מבחן מסכם'];
+        const isOpen = allChaptersPassed || (finalFlag !== undefined && finalFlag !== null && finalFlag >= 0);
         btn.className = 'chapter-btn final';
         btn.onclick = null;
         if (isOpen) {
             btn.classList.add('active');
-            statusEl.className = 'chapter-status open'; statusEl.innerText = '▶️ לחץ להתחיל!';
-            lockEl.innerText = '🏆'; btn.onclick = () => startChapter('מבחן מסכם');
+            statusEl.className = 'chapter-status open';
+            statusEl.innerText = finalFlag > 0 ? `ניגשת בעבר: ${Math.round(finalFlag)}%` : '▶️ לחץ להתחיל!';
+            lockEl.innerText = '🏆';
+            btn.onclick = () => startChapter('מבחן מסכם');
         } else {
             btn.classList.add('locked');
-            statusEl.className = 'chapter-status locked'; statusEl.innerText = '🔒 נפתח לאחר מעבר כל הפרקים';
+            statusEl.className = 'chapter-status locked';
+            statusEl.innerText = '🔒 נפתח לאחר מעבר כל הפרקים';
             lockEl.innerText = '🔒';
         }
     }
@@ -1032,7 +1039,7 @@
                 fetch(`${GOOGLE_URL}?action=saveProgress&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&chapter=${encodeURIComponent(currentChapter)}&score=${score}`);
                 if (score > (progress[currentChapter] || 0)) progress[currentChapter] = score;
             } else {
-                fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ name: user.name, phone: user.phone, email: user.email, score: score }) });
+                fetch(`${GOOGLE_URL}?action=saveFinalExamScore&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&score=${score}`);
             }
             showResult(score, passed, passScore);
         }

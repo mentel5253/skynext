@@ -384,7 +384,7 @@ function disableSecurityKeys(e) {
 </main>
 
 <script>
-const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxj4w3zVA7_1MRWdq7yZyZMWxQQawFN9Uf18JG-oFwB-aG4SU0nNS5N8Q3k9U5r_1g1Gg/exec";
+const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbxn1H3HtfW1iApA1ElsUzBXmkJLTXLBBNhYMbFpw2sbDCSnfSFktks8rws3eE5LOfj-nA/exec";
 const ADMIN_PASS = "pilot100";
 let chartScores = null;
 let allProgressData = [];
@@ -865,7 +865,7 @@ function renderKeysList(keys) {
 }
 
 function sendKeyWhatsApp(phone, key, name) {
-    const msg = `שלום ${name}!\n\n✈️ *SkyNext* — מערכת הכנה לבחינת כטב"מ\n\nקוד הגישה האישי שלך:\n\n🔑 *${key}*\n\nלכניסה למערכת:\nhttps://mentel5253.github.io/skynext/\n\nבהצלחה! 💪`;
+    const msg = `שלום ${name}!\n\n✈️ *SkyNext* — מערכת הכנה לבחינת כטב"מ\n\nקוד הגישה האישי שלך:\n\n🔑 *${key}*\n\nלכניסה למערכת:\nhttps://www.skynext.co.il/\n\nבהצלחה! 💪`;
     window.open('https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
