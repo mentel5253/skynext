@@ -866,38 +866,36 @@ function renderKeysList(keys) {
 
 function sendKeyWhatsApp(phone, key, name) {
     const msg = `שלום ${name}!\n\n✈️ *SkyNext* — מערכת הכנה לבחינת כטב"מ\n\nקוד הגישה האישי שלך:\n\n🔑 *${key}*\n\nלכניסה למערכת:\nhttps://www.skynext.co.il/\n\nבהצלחה! 💪`;
-    window.open('https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + encodeURIComponent(msg), '_blank');
+    const url = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + encodeURIComponent(msg);
+    window.open(url, '_blank');
 }
 
 async function adminCreateAndSend() {
     const name = document.getElementById('new-key-name').value.trim();
     const phone = document.getElementById('new-key-phone').value.trim().replace(/\D/g, '');
-    const email = document.getElementById('new-key-email').value.trim();
+    const email = document.getElementById('new-key-email') ? document.getElementById('new-key-email').value.trim() : '';
     const expiry = document.getElementById('new-key-expiry').value;
     if (!name) { showFeedback('feedback-keys', '❌ הזן שם חניך', 'error'); return; }
     if (!phone) { showFeedback('feedback-keys', '❌ הזן מספר טלפון', 'error'); return; }
     const key = generateKey();
     try {
-        // שמור את הסיסמה
         await fetch(GOOGLE_URL + '?action=createKey&key=' + key + '&name=' + encodeURIComponent(name) + '&expiry=' + encodeURIComponent(expiry) + '&phone=' + encodeURIComponent(phone));
         showCreatedKey(key, name, expiry);
         document.getElementById('new-key-name').value = '';
         document.getElementById('new-key-phone').value = '';
-        document.getElementById('new-key-email').value = '';
+        if (document.getElementById('new-key-email')) document.getElementById('new-key-email').value = '';
         document.getElementById('new-key-expiry').value = '';
         loadKeys();
         // שלח אימייל אם הוזן
         if (email) {
             const emailRes = await fetch(GOOGLE_URL + '?action=sendKeyEmail&email=' + encodeURIComponent(email) + '&name=' + encodeURIComponent(name) + '&key=' + key);
             const emailResult = await emailRes.text();
-            if (emailResult.trim() === 'OK') {
-                showFeedback('feedback-keys', '✅ סיסמה נוצרה ואימייל נשלח!', 'success');
-            } else {
-                showFeedback('feedback-keys', '⚠️ סיסמה נוצרה אך האימייל נכשל', 'error');
-            }
+            showFeedback('feedback-keys', emailResult.trim() === 'OK' ? '✅ סיסמה נוצרה ואימייל נשלח!' : '⚠️ סיסמה נוצרה אך האימייל נכשל', emailResult.trim() === 'OK' ? 'success' : 'error');
+        } else {
+            showFeedback('feedback-keys', '✅ סיסמה נוצרה!', 'success');
         }
-        // פתח וואטסאפ אוטומטית
-        setTimeout(() => sendKeyWhatsApp(phone, key, name), 800);
+        // פתח וואטסאפ מיד (ללא setTimeout — נמנע מחסימת דפדפן)
+        sendKeyWhatsApp(phone, key, name);
     } catch(e) { showFeedback('feedback-keys', '❌ שגיאה ביצירת סיסמה', 'error'); }
 }
 
@@ -922,14 +920,36 @@ function showCreatedKey(key, name, expiry) {
     const meta = expiry ? `שם: ${name} | תפוגה: ${new Date(expiry).toLocaleDateString('he-IL')}` : `שם: ${name} | ללא תפוגה`;
     document.getElementById('new-key-meta').innerText = meta;
     document.getElementById('new-key-display').style.display = 'block';
-    showFeedback('feedback-keys', '✅ סיסמה נוצרה!', 'success');
 }
 
 function copyKey() {
     const key = document.getElementById('new-key-value').innerText;
-    navigator.clipboard.writeText(key).then(() => {
+    if (!key) return;
+    // נסה clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(key).then(() => {
+            showFeedback('feedback-keys', '✅ הועתק ללוח!', 'success');
+        }).catch(() => fallbackCopy(key));
+    } else {
+        fallbackCopy(key);
+    }
+}
+
+function fallbackCopy(text) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.position = 'fixed';
+    el.style.opacity = '0';
+    document.body.appendChild(el);
+    el.focus();
+    el.select();
+    try {
+        document.execCommand('copy');
         showFeedback('feedback-keys', '✅ הועתק ללוח!', 'success');
-    });
+    } catch(e) {
+        showFeedback('feedback-keys', '❌ לא ניתן להעתיק', 'error');
+    }
+    document.body.removeChild(el);
 }
 
 async function adminDeleteKey() {
