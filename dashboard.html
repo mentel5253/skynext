@@ -389,6 +389,7 @@ const ADMIN_PASS = "pilot100";
 let chartScores = null;
 let allProgressData = [];
 let allStudentsData = [];
+let allFinalExamHistory = [];
 let activeTab = 'stats';
 
 function switchTab(tab, btn) {
@@ -426,9 +427,12 @@ function doLogout() {
 }
 
 window.onload = function() {
-    document.getElementById('login-screen').style.display = 'flex';
-    document.getElementById('main-header').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'none';
+    const loginScreen = document.getElementById('login-screen');
+    const mainHeader = document.getElementById('main-header');
+    const dashboard = document.getElementById('dashboard');
+    if (loginScreen) loginScreen.style.display = 'flex';
+    if (mainHeader) mainHeader.style.display = 'none';
+    if (dashboard) dashboard.style.display = 'none';
 };
 
 function openChangePass() {
@@ -460,6 +464,7 @@ async function loadData() {
         const data = JSON.parse(text);
         allProgressData = data.progress || [];
         allStudentsData = data.students || [];
+        allFinalExamHistory = data.finalExamHistory || [];
         renderStatsFromProgress(allProgressData);
         renderChaptersTab(allProgressData);
         document.getElementById('last-update').innerText = 'עדכון אחרון: ' + new Date().toLocaleTimeString('he-IL');
@@ -506,7 +511,7 @@ function renderStatsFromProgress(progressData) {
     renderFullTable(studentsWithAvg);
     renderAlertsFromProgress(studentsWithAvg);
     renderChapterAvg(progressData);
-    renderFinalExamStats(finalExamStudents);
+    renderFinalExamStats(finalExamStudents, allFinalExamHistory);
 }
 
 function renderChartFromProgress(students) {
@@ -1034,31 +1039,91 @@ function handleExcelFile(file) {
     reader.readAsArrayBuffer(file);
 }
 
-function renderFinalExamStats(finalStudents) {
+function renderFinalExamStats(finalStudents, history) {
     const wrap = document.getElementById('final-exam-wrap');
     if (!wrap) return;
-    if (!finalStudents || finalStudents.length === 0) {
+
+    // אם אין היסטוריה כלל
+    if (!history || history.length === 0) {
         wrap.innerHTML = '<div style="color:var(--text-muted);font-size:0.9rem;">אף חניך עדיין לא ניגש למבחן המסכם.</div>';
         return;
     }
-    const sorted = [...finalStudents].sort((a,b) => b.finalExam - a.finalExam);
-    const rows = sorted.map((p, i) => {
-        const score = Math.round(p.finalExam);
-        const passed = score >= 70;
-        const rankClass = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'rank-other';
-        const barColor = passed ? '#2ecc71' : '#e74c3c';
-        return `<tr>
-            <td><span class="rank-badge ${rankClass}">${i+1}</span></td>
-            <td>${p.name || '—'}</td>
-            <td><div class="score-bar-wrap"><div class="score-bar-bg"><div class="score-bar-fill" style="width:${score}%;background:${barColor};"></div></div><div class="score-text ${passed?'pass':'fail'}">${score}%</div></div></td>
-            <td style="text-align:center;"><span style="color:${passed?'var(--green)':'var(--red)'};">${passed?'✅ עבר':'❌ נכשל'}</span></td>
+
+    // קבץ לפי טלפון
+    const byPhone = {};
+    history.forEach(h => {
+        if (!byPhone[h.phone]) byPhone[h.phone] = { name: h.name, attempts: [] };
+        byPhone[h.phone].attempts.push({ date: h.date, score: h.score });
+    });
+
+    // בנה טבלה מורחבת
+    let rows = '';
+    Object.keys(byPhone).forEach((phone, idx) => {
+        const student = byPhone[phone];
+        const attempts = student.attempts;
+        const best = Math.max(...attempts.map(a => a.score));
+        const avg = Math.round(attempts.reduce((s, a) => s + a.score, 0) / attempts.length);
+        const passed = best >= 70;
+
+        // שורת סיכום לחניך
+        rows += `<tr style="background:rgba(255,255,255,0.04); cursor:pointer;" onclick="toggleAttempts('hist-${idx}')">
+            <td style="font-weight:700;">${student.name || phone}</td>
+            <td style="text-align:center;">${attempts.length}</td>
+            <td style="text-align:center;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <div style="flex:1;background:rgba(255,255,255,0.1);height:6px;border-radius:3px;">
+                        <div style="width:${avg}%;height:100%;background:${avg>=70?'var(--green)':'var(--red)'};border-radius:3px;"></div>
+                    </div>
+                    <span style="font-weight:700;color:${avg>=70?'var(--green)':'var(--red)'};">${avg}%</span>
+                </div>
+            </td>
+            <td style="text-align:center;font-weight:700;color:${best>=70?'var(--green)':'var(--red)'};">${best}%</td>
+            <td style="text-align:center;"><span style="color:${passed?'var(--green)':'var(--red)'};">${passed?'✅ עבר':'❌ טרם עבר'}</span></td>
+            <td style="text-align:center;font-size:0.8rem;color:var(--text-muted);">▼ פרט</td>
         </tr>`;
-    }).join('');
+
+        // שורות פרוט ניסיונות — מוסתרות ברירת מחדל
+        rows += `<tr id="hist-${idx}" style="display:none;">
+            <td colspan="6" style="padding:0;">
+                <table style="width:100%;font-size:0.85rem;background:rgba(0,0,0,0.2);">
+                    <thead><tr>
+                        <th style="padding:8px 15px;color:var(--text-muted);font-weight:600;">ניסיון</th>
+                        <th style="padding:8px;color:var(--text-muted);font-weight:600;">תאריך</th>
+                        <th style="padding:8px;color:var(--text-muted);font-weight:600;">ציון</th>
+                        <th style="padding:8px;color:var(--text-muted);font-weight:600;">תוצאה</th>
+                    </tr></thead>
+                    <tbody>
+                        ${attempts.map((a, i) => `<tr>
+                            <td style="padding:8px 15px;">#${i+1}</td>
+                            <td style="padding:8px;">${a.date}</td>
+                            <td style="padding:8px;font-weight:700;color:${a.score>=70?'var(--green)':'var(--red)'};">${a.score}%</td>
+                            <td style="padding:8px;">${a.score>=70?'✅ עבר':'❌ נכשל'}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </td>
+        </tr>`;
+    });
+
     wrap.innerHTML = `
+        <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px;">לחץ על שורת חניך לצפייה בכל הניסיונות</p>
         <table class="students-table">
-            <thead><tr><th>#</th><th>שם חניך</th><th>ציון</th><th style="text-align:center;">תוצאה</th></tr></thead>
+            <thead><tr>
+                <th>שם חניך</th>
+                <th style="text-align:center;">ניסיונות</th>
+                <th>ממוצע</th>
+                <th style="text-align:center;">ציון מיטבי</th>
+                <th style="text-align:center;">סטטוס</th>
+                <th></th>
+            </tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
+}
+
+function toggleAttempts(id) {
+    const row = document.getElementById(id);
+    if (!row) return;
+    row.style.display = row.style.display === 'none' || row.style.display === '' ? 'table-row' : 'none';
 }
 
 function parseExcelRows(rows) {
