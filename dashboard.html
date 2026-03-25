@@ -733,8 +733,10 @@ function normalizePhone(raw) { return raw.replace(/\D/g, ''); }
 async function adminUnlockAll() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
+    const student = allProgressData.find(p => normalizePhone(p.phone) === phone);
+    const name = student ? student.name : '';
     try {
-        await fetch(GOOGLE_URL + '?action=unlockChapters&phone=' + phone + '&name=' + encodeURIComponent('פתיחה ידנית'));
+        await fetch(GOOGLE_URL + '?action=unlockChapters&phone=' + phone + '&name=' + encodeURIComponent(name));
         showFeedback('feedback-unlock', '✅ כל הפרקים נפתחו!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-unlock', 'שגיאה בחיבור לשרת', 'error'); }
@@ -743,8 +745,10 @@ async function adminUnlockAll() {
 async function adminOpenFinal() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
+    const student = allProgressData.find(p => normalizePhone(p.phone) === phone);
+    const name = student ? student.name : '';
     try {
-        await fetch(GOOGLE_URL + '?action=unlockFinal&phone=' + phone + '&name=' + encodeURIComponent('פתיחה ידנית'));
+        await fetch(GOOGLE_URL + '?action=unlockFinal&phone=' + phone + '&name=' + encodeURIComponent(name));
         showFeedback('feedback-unlock', '✅ מבחן מסכם נפתח בלבד!', 'success');
         loadData();
     } catch(e) { showFeedback('feedback-unlock', 'שגיאה בחיבור לשרת', 'error'); }
@@ -1000,18 +1004,11 @@ let excelStudents = [];
 function downloadTemplate() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet([
-        ['שם', 'טלפון', 'אימייל', 'תפוגה'],
-        ['ישראל ישראלי', '0501234567', 'israel@example.com', new Date('2026-12-31')],
-        ['שרה כהן', '0509876543', 'sara@example.com', ''],
+        ['שם פרטי', 'שם משפחה', 'טלפון', 'אימייל', 'תאריך קורס'],
+        ['ישראל', 'ישראלי', '0501234567', 'israel@example.com', '01/04/2026'],
+        ['שרה', 'כהן', '0509876543', 'sara@example.com', '01/04/2026'],
     ]);
-    // פורמט תאריך לעמודה D
-    ws['!cols'] = [{wch:20},{wch:15},{wch:25},{wch:14}];
-    if (!ws['!formats']) ws['!formats'] = {};
-    // הגדר פורמט תאריך לתאים D2 ו-D3
-    const dateFmt = 'dd/mm/yyyy';
-    if (ws['D2']) { ws['D2'].t = 'd'; ws['D2'].z = dateFmt; }
-    if (ws['D3']) { ws['D3'].t = 'd'; ws['D3'].z = dateFmt; }
-    // הגדר את רוחב העמודות
+    ws['!cols'] = [{wch:15},{wch:15},{wch:15},{wch:25},{wch:14}];
     XLSX.utils.book_append_sheet(wb, ws, 'חניכים');
     XLSX.writeFile(wb, 'תבנית_חניכים_SkyNext.xlsx');
 }
@@ -1128,32 +1125,25 @@ function toggleAttempts(id) {
 
 function parseExcelRows(rows) {
     if (rows.length < 2) { showFeedback('feedback-keys', '❌ הקובץ ריק', 'error'); return; }
-    const dataRows = rows.slice(1).filter(r => r[0] || r[1]);
+    const dataRows = rows.slice(1).filter(r => r[0] || r[1] || r[2]);
     excelStudents = dataRows.map(r => {
-        // תמיכה בפורמט חדש: A=שם, B=טלפון, C=אימייל, D=שנה, E=חודש, F=יום
-        // ובפורמט ישן: A=שם, B=טלפון, C=אימייל, D=תאריך
-        let expiry = '';
-        if (r[3] && r[4] && r[5]) {
-            // פורמט חדש עם 3 עמודות נפרדות
-            const year = parseInt(r[3]) || 0;
-            const month = parseInt(r[4]) || 0;
-            const day = parseInt(r[5]) || 0;
-            if (year && month && day) {
-                expiry = year + '-' + String(month).padStart(2,'0') + '-' + String(day).padStart(2,'0');
-            }
-        } else if (r[3]) {
-            // פורמט ישן — תאריך ישיר
-            expiry = r[3].toString().trim();
-        }
+        // פורמט חדש: A=שם פרטי, B=שם משפחה, C=טלפון, D=אימייל, E=תאריך קורס
+        const firstName = (r[0] || '').toString().trim();
+        const lastName = (r[1] || '').toString().trim();
+        const phone = (r[2] || '').toString().replace(/\D/g, '');
+        const email = (r[3] || '').toString().trim();
+        const courseDate = r[4] ? new Date(r[4]).toISOString().split('T')[0] : '';
         return {
-            name: (r[0] || '').toString().trim(),
-            phone: (r[1] || '').toString().replace(/\D/g, ''),
-            email: (r[2] || '').toString().trim(),
-            expiry: expiry,
+            firstName,
+            lastName,
+            name: (firstName + ' ' + lastName).trim(),
+            phone,
+            email,
+            courseDate,
             key: '',
             status: 'ממתין'
         };
-    }).filter(s => s.name && s.phone);
+    }).filter(s => s.phone);
 
     if (excelStudents.length === 0) { showFeedback('feedback-keys', '❌ לא נמצאו שורות תקינות', 'error'); return; }
     renderExcelPreview();
@@ -1163,19 +1153,20 @@ function parseExcelRows(rows) {
 
 function renderExcelPreview() {
     const rows = excelStudents.map((s, i) => {
-        const statusColor = s.status === 'הושלם' ? 'var(--green)' : s.status === 'שגיאה' ? 'var(--red)' : 'var(--text-muted)';
+        const statusColor = s.status === '✅ נשלח אימייל' || s.status === '✅ נוצר' ? 'var(--green)' : s.status === 'שגיאה' ? 'var(--red)' : 'var(--text-muted)';
         return `<tr id="excel-row-${i}">
-            <td>${s.name}</td>
+            <td>${s.firstName}</td>
+            <td>${s.lastName}</td>
             <td style="direction:ltr;">${s.phone}</td>
             <td>${s.email || '—'}</td>
-            <td>${s.expiry || '—'}</td>
+            <td>${s.courseDate || '—'}</td>
             <td style="color:var(--gold);letter-spacing:2px;font-weight:700;">${s.key || '—'}</td>
             <td style="color:${statusColor};">${s.status}</td>
         </tr>`;
     }).join('');
     document.getElementById('excel-preview-table').innerHTML = `
         <table class="students-table">
-            <thead><tr><th>שם</th><th>טלפון</th><th>אימייל</th><th>תפוגה</th><th>סיסמה</th><th>סטטוס</th></tr></thead>
+            <thead><tr><th>שם פרטי</th><th>שם משפחה</th><th>טלפון</th><th>אימייל</th><th>תאריך קורס</th><th>סיסמה</th><th>סטטוס</th></tr></thead>
             <tbody>${rows}</tbody>
         </table>`;
 }
@@ -1185,40 +1176,54 @@ async function importAllStudents() {
     const btn = document.getElementById('btn-import-all');
     btn.disabled = true;
     btn.innerText = '⏳ מייבא...';
-
     document.getElementById('import-progress').style.display = 'block';
     const total = excelStudents.length;
 
     for (let i = 0; i < total; i++) {
         const s = excelStudents[i];
-        const expiry = s.expiry || globalExpiry || '';
+        const expiry = globalExpiry || '';
         const key = generateKey();
 
         document.getElementById('import-status').innerText = `מעבד ${i+1} מתוך ${total}: ${s.name}`;
         document.getElementById('import-bar').style.width = ((i / total) * 100) + '%';
 
         try {
-            // שמור סיסמה
+            // 1. שמור חניך בגיליון Students
+            await fetch(GOOGLE_URL + '?action=importStudent' +
+                '&firstName=' + encodeURIComponent(s.firstName) +
+                '&lastName=' + encodeURIComponent(s.lastName) +
+                '&phone=' + encodeURIComponent(s.phone) +
+                '&email=' + encodeURIComponent(s.email) +
+                '&courseDate=' + encodeURIComponent(s.courseDate));
+
+            // 2. צור סיסמה ושמור ב-Keys
             await fetch(GOOGLE_URL + '?action=createKey&key=' + key +
                 '&name=' + encodeURIComponent(s.name) +
                 '&expiry=' + encodeURIComponent(expiry) +
                 '&phone=' + encodeURIComponent(s.phone));
 
-            // שלח אימייל אם יש
-            if (s.email) {
-                await fetch(GOOGLE_URL + '?action=sendKeyEmail&email=' + encodeURIComponent(s.email) +
-                    '&name=' + encodeURIComponent(s.name) + '&key=' + key);
-            }
+            // 3. עדכן סיסמה ב-Students
+            await fetch(GOOGLE_URL + '?action=updateStudentKey' +
+                '&phone=' + encodeURIComponent(s.phone) +
+                '&key=' + key);
 
+            // 4. שלח אימייל אם יש
+            if (s.email) {
+                await fetch(GOOGLE_URL + '?action=sendKeyEmail' +
+                    '&email=' + encodeURIComponent(s.email) +
+                    '&name=' + encodeURIComponent(s.name) +
+                    '&key=' + key);
+                excelStudents[i].status = '✅ נשלח אימייל';
+            } else {
+                excelStudents[i].status = '✅ נוצר';
+            }
             excelStudents[i].key = key;
-            excelStudents[i].status = s.email ? '✅ נשלח אימייל' : '✅ נוצר';
 
         } catch(e) {
             excelStudents[i].status = 'שגיאה';
         }
 
         renderExcelPreview();
-        // השהייה קצרה בין בקשות
         await new Promise(r => setTimeout(r, 400));
     }
 
@@ -1226,7 +1231,7 @@ async function importAllStudents() {
     document.getElementById('import-status').innerText = `✅ הסתיים! ${total} חניכים יובאו בהצלחה`;
     btn.innerText = '✅ הסתיים';
 
-    // הצג כפתור שליחת וואטסאפ לכולם
+    // כפתור וואטסאפ לכולם
     const waBtn = document.createElement('button');
     waBtn.className = 'admin-btn green';
     waBtn.style.marginTop = '10px';
@@ -1235,6 +1240,7 @@ async function importAllStudents() {
     document.getElementById('import-progress').appendChild(waBtn);
 
     loadKeys();
+    loadData();
 }
 
 async function sendWhatsAppToAll() {
