@@ -47,6 +47,11 @@
         #clock-date { font-size: 0.75rem; font-weight: 600; opacity: 0.85; }
 
         .container { width: 95%; max-width: 750px; margin: calc(var(--header-height) + 30px) auto 60px; padding: 0 15px; box-sizing: border-box; }
+        /* דף מבחן — מלא ורחב יותר */
+        #page-exam.card {
+            max-width: 900px;
+            padding: 25px 30px;
+        }
         .card { background: var(--card-white); border-radius: 15px; padding: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); width: 100%; box-sizing: border-box; }
         .hidden { display: none !important; }
         .main-brand-logo { width: 320px; max-width: 90%; height: auto; margin: 0 auto 25px; display: block; }
@@ -402,8 +407,9 @@
             </div>
         </div>
 
-        <div style="text-align:center; margin-bottom:15px;">
-            <span id="exam-chapter-badge" class="result-chapter-badge"></span>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+            <span id="exam-chapter-badge" class="result-chapter-badge" style="margin:0;"></span>
+            <button id="btn-exit-exam" onclick="exitExam()" style="padding:7px 16px; background:#f0f0f0; border:1px solid #ddd; border-radius:10px; font-size:0.9rem; font-weight:700; color:#555; cursor:pointer; font-family:inherit; transition:0.2s;" onmouseover="this.style.background='#e74c3c';this.style.color='white';this.style.borderColor='#e74c3c'" onmouseout="this.style.background='#f0f0f0';this.style.color='#555';this.style.borderColor='#ddd'">🚪 יציאה</button>
         </div>
         <div class="progress-container"><div id="progress-bar" class="progress-bar"></div></div>
         <div id="question-image" class="hidden"></div>
@@ -1091,6 +1097,18 @@
     }
 
     function retryChapter() { startChapter(currentChapter); }
+
+    async function exitExam() {
+        const msg = currentChapter === 'מבחן מסכם'
+            ? 'לצאת מהמבחן המסכם? ההתקדמות תישמר ותוכל להמשיך בפעם הבאה.'
+            : 'לצאת מהפרק? ההתקדמות שלך נשמרת אוטומטית.';
+        if (await showConfirm(msg)) {
+            clearInterval(timerId);
+            if (examStarted && !isReviewMode) saveExamState();
+            examStarted = false;
+            showChapterSelect();
+        }
+    }
 
     function startReview() {
         isReviewMode = true; current = 0;
