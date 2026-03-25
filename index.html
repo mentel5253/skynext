@@ -754,6 +754,7 @@
     }
 
     function setFinalBtn(allChaptersPassed) {
+        console.log('setFinalBtn called - allPassed:', allChaptersPassed, 'finalFlag:', progress['מבחן מסכם'], 'progress:', JSON.stringify(progress));
         const btn = document.getElementById('btn-final');
         const statusEl = document.getElementById('status-final');
         const lockEl = document.getElementById('lock-final');
