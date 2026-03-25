@@ -480,6 +480,7 @@
     let isReviewMode = false;
     let timeLeft = 3600;
     let timerId;
+    let examStartTime = null; // זמן התחלת המבחן
     let progress = {};
 
     // ===== האם במצב למידה חי (תרגול פרק — לא מבחן מסכם, לא סקירה) =====
@@ -502,6 +503,26 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // ===== טיימר מבוסס שעון אמיתי =====
+    function startTimer(totalSeconds, startTime) {
+        clearInterval(timerId);
+        examStartTime = startTime || Date.now();
+        const endTime = examStartTime + (totalSeconds * 1000);
+
+        timerId = setInterval(() => {
+            const remaining = Math.max(0, Math.round((endTime - Date.now()) / 1000));
+            timeLeft = remaining;
+            const mm = Math.floor(remaining / 60);
+            const ss = remaining % 60;
+            document.getElementById('header-timer').innerText = `${mm}:${ss < 10 ? '0' : ''}${ss}`;
+            if (remaining <= 0) {
+                clearInterval(timerId);
+                finishCheck();
+            }
+            if (remaining % 30 === 0) saveExamState();
+        }, 1000);
+    }
+
     // ===== שמירת מצב מבחן =====
     function saveExamState() {
         if (!examStarted || isReviewMode) return;
@@ -511,6 +532,7 @@
             answers: answers,
             current: current,
             timeLeft: timeLeft,
+            examStartTime: examStartTime,
             userPhone: user.phone,
             savedAt: Date.now()
         };
@@ -674,14 +696,8 @@
         document.getElementById('exam-chapter-badge').innerText = currentChapter === 'מבחן מסכם' ? '🏆 מבחן מסכם סופי' : `📚 ${currentChapter}`;
         document.getElementById('header-timer').classList.remove('hidden');
         document.getElementById('header-progress').classList.remove('hidden');
-        clearInterval(timerId);
-        timerId = setInterval(() => {
-            timeLeft--;
-            let mm = Math.floor(timeLeft/60), ss = timeLeft%60;
-            document.getElementById('header-timer').innerText = `${mm}:${ss<10?'0':''}${ss}`;
-            if(timeLeft<=0) finishCheck();
-            saveExamState();
-        }, 1000);
+        // חשב זמן התחלה מחדש לפי הזמן שנשאר
+        startTimer(timeLeft, Date.now());
         showQuestion();
     }
 
@@ -864,14 +880,7 @@
         document.getElementById('page-exam').classList.remove('hidden');
         document.getElementById('header-timer').classList.remove('hidden');
         document.getElementById('header-progress').classList.remove('hidden');
-        clearInterval(timerId);
-        timerId = setInterval(() => {
-            timeLeft--;
-            let mm = Math.floor(timeLeft/60), ss = timeLeft%60;
-            document.getElementById('header-timer').innerText = `${mm}:${ss<10?'0':''}${ss}`;
-            if(timeLeft<=0) finishCheck();
-            if (timeLeft % 30 === 0) saveExamState();
-        }, 1000);
+        startTimer(3600, Date.now());
         saveExamState();
         showQuestion();
     }
