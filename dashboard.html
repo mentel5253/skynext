@@ -595,13 +595,17 @@ function showStudentHistory(phone, name) {
         const attempts = chapters.filter(h => h.chapter === ch);
         if (attempts.length === 0) return;
         html += `<div style="margin-bottom:15px;">
-            <div style="font-weight:700;color:#1a1a2e;margin-bottom:6px;">${ch}</div>
-            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-                <thead><tr style="background:#f0f0f0;"><th style="padding:5px 8px;text-align:right;">תאריך</th><th style="padding:5px 8px;text-align:center;">ציון</th><th style="padding:5px 8px;text-align:center;">תוצאה</th></tr></thead>
-                <tbody>${attempts.map(a => `<tr>
-                    <td style="padding:4px 8px;">${a.date}</td>
-                    <td style="padding:4px 8px;text-align:center;font-weight:700;color:${a.score>=90?'#2ecc71':'#e74c3c'};">${a.score}%</td>
-                    <td style="padding:4px 8px;text-align:center;">${a.score>=90?'✅':'❌'}</td>
+            <div style="font-weight:700;color:#1a1a2e;margin-bottom:6px;font-size:1rem;">${ch}</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                <thead><tr style="background:#f5f5f5;">
+                    <th style="padding:6px 10px;text-align:right;color:#333;">תאריך</th>
+                    <th style="padding:6px 10px;text-align:center;color:#333;">ציון</th>
+                    <th style="padding:6px 10px;text-align:center;color:#333;">תוצאה</th>
+                </tr></thead>
+                <tbody>${attempts.map((a,idx) => `<tr style="background:${idx%2===0?'white':'#fafafa'};">
+                    <td style="padding:6px 10px;color:#111 !important;">${a.date || '—'}</td>
+                    <td style="padding:6px 10px;text-align:center;font-weight:700;color:${a.score>=90?'#27ae60':'#e74c3c'};font-size:1rem;">${a.score}%</td>
+                    <td style="padding:6px 10px;text-align:center;font-size:1rem;">${a.score>=90?'✅':'❌'}</td>
                 </tr>`).join('')}</tbody>
             </table>
         </div>`;
@@ -610,13 +614,17 @@ function showStudentHistory(phone, name) {
     // מבחנים מסכמים
     if (finals.length > 0) {
         html += `<div style="margin-bottom:15px;">
-            <div style="font-weight:700;color:#1a1a2e;margin-bottom:6px;">🏆 מבחן מסכם</div>
-            <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
-                <thead><tr style="background:#f0f0f0;"><th style="padding:5px 8px;text-align:right;">תאריך</th><th style="padding:5px 8px;text-align:center;">ציון</th><th style="padding:5px 8px;text-align:center;">תוצאה</th></tr></thead>
-                <tbody>${finals.map(a => `<tr>
-                    <td style="padding:4px 8px;">${a.date}</td>
-                    <td style="padding:4px 8px;text-align:center;font-weight:700;color:${a.score>=70?'#2ecc71':'#e74c3c'};">${a.score}%</td>
-                    <td style="padding:4px 8px;text-align:center;">${a.score>=70?'✅ עבר':'❌ נכשל'}</td>
+            <div style="font-weight:700;color:#1a1a2e;margin-bottom:6px;font-size:1rem;">🏆 מבחן מסכם</div>
+            <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+                <thead><tr style="background:#f5f5f5;">
+                    <th style="padding:6px 10px;text-align:right;color:#333;">תאריך</th>
+                    <th style="padding:6px 10px;text-align:center;color:#333;">ציון</th>
+                    <th style="padding:6px 10px;text-align:center;color:#333;">תוצאה</th>
+                </tr></thead>
+                <tbody>${finals.map((a,idx) => `<tr style="background:${idx%2===0?'white':'#fafafa'};">
+                    <td style="padding:6px 10px;color:#333;">${a.date || '—'}</td>
+                    <td style="padding:6px 10px;text-align:center;font-weight:700;color:${a.score>=70?'#27ae60':'#e74c3c'};font-size:1rem;">${a.score}%</td>
+                    <td style="padding:6px 10px;text-align:center;font-size:1rem;">${a.score>=70?'✅ עבר':'❌ נכשל'}</td>
                 </tr>`).join('')}</tbody>
             </table>
         </div>`;
@@ -626,12 +634,16 @@ function showStudentHistory(phone, name) {
 
     // הצג ב-modal
     const overlay = document.createElement('div');
+    overlay.id = 'student-history-overlay';
     overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;';
     overlay.innerHTML = `<div style="background:white;border-radius:15px;padding:25px;max-width:550px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
         ${html}
-        <button onclick="this.closest('[style]').remove()" style="margin-top:15px;padding:10px 25px;background:#1a1a2e;color:white;border:none;border-radius:8px;cursor:pointer;font-family:Heebo,sans-serif;font-weight:700;width:100%;">סגור</button>
+        <button id="close-history-btn" style="margin-top:15px;padding:10px 25px;background:#1a1a2e;color:white;border:none;border-radius:8px;cursor:pointer;font-family:Heebo,sans-serif;font-weight:700;width:100%;font-size:1rem;">סגור</button>
     </div>`;
     document.body.appendChild(overlay);
+    document.getElementById('close-history-btn').onclick = function() {
+        document.getElementById('student-history-overlay').remove();
+    };
 }
 
 function renderAlertsFromProgress(students) {
