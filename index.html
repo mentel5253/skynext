@@ -234,7 +234,12 @@
             body { background-color: #ffffff; }
             .container { width: 100% !important; max-width: 100% !important; padding: 0 !important; margin-top: var(--header-height) !important; margin-bottom: 35px; }
             .card { border-radius: 0; box-shadow: none; padding: 20px 15px; width: 100%; min-height: calc(100vh - var(--header-height) - 35px); }
-            #page-exam.card { padding: 15px; }
+            #page-exam.card { padding: 12px; }
+            /* נקודות ניווט קטנות */
+            .dots-nav { display: flex; gap: 3px; margin-top: 8px; padding-top: 8px; }
+            .dot { width: 20px; height: 20px; font-size: 0.6rem; border-radius: 4px; }
+            /* כפתור פנייה למדריך קטן יותר */
+            #btn-contact { margin-top: 6px; padding: 6px 10px; font-size: 0.8rem; }
             /* Header במובייל */
             .sky-header { padding: 0 10px; }
             .header-logo { height: 38px; }
@@ -252,9 +257,16 @@
                 min-width: 55px;
             }
             .dashboard-btn { font-size: 0.75rem; padding: 5px 8px; }
-            .q-text { font-size: 1.15rem; }
-            .opt-btn { font-size: 1rem; padding: 14px; }
+            .q-text { font-size: 1rem; margin-bottom: 12px; line-height: 1.5; }
+            .opt-btn { font-size: 0.9rem; padding: 10px; margin-bottom: 6px; }
             .main-brand-logo { width: 180px; margin-bottom: 15px; }
+            /* נקודות ניווט קטנות מאוד */
+            .dots-nav { gap: 3px; margin-top: 10px; padding-top: 10px; }
+            .dot { width: 22px; height: 22px; font-size: 0.6rem; border-radius: 4px; }
+            /* כפתורים תחתונים */
+            .btn { padding: 11px; font-size: 0.95rem; }
+            #btn-finish { margin-top: 8px; padding: 11px; }
+            #btn-contact { margin-top: 6px; padding: 7px; font-size: 0.8rem; }
             /* דף הוראות במובייל */
             #page-instructions h2 { font-size: 1.3rem; padding-bottom: 8px; margin-bottom: 10px; }
             #page-instructions p { font-size: 0.9rem; margin: 6px 0; line-height: 1.5; }
@@ -935,7 +947,12 @@
     function showQuestion() {
         const q = questions[current];
         document.getElementById('header-progress').innerText = `${current + 1}/${questions.length}`;
-        document.getElementById('btn-contact').classList.remove('hidden');
+        // פנייה למדריך — רק בפרקי תרגול, לא במבחן מסכם
+        if (currentChapter === 'מבחן מסכם' || isReviewMode) {
+            document.getElementById('btn-contact').classList.add('hidden');
+        } else {
+            document.getElementById('btn-contact').classList.remove('hidden');
+        }
 
         const imgBox = document.getElementById('question-image');
         if (q.image) {
