@@ -418,6 +418,8 @@ function showDashboard() {
     document.getElementById('main-header').style.display = 'flex';
     document.getElementById('dashboard').style.display = 'block';
     loadData();
+    // רענון אוטומטי כל 5 דקות
+    setInterval(loadData, 5 * 60 * 1000);
 }
 
 function doLogout() {
