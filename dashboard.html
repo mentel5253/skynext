@@ -473,6 +473,8 @@ async function loadData() {
         renderStatsFromProgress(allProgressData);
         renderChaptersTab(allProgressData);
         document.getElementById('last-update').innerText = 'עדכון אחרון: ' + new Date().toLocaleTimeString('he-IL');
+        // טען Keys ברקע לשימוש ב-findStudentName
+        fetch(GOOGLE_URL + '?action=getKeys').then(r => r.text()).then(t => { allKeysData = JSON.parse(t); }).catch(()=>{});
     } catch(e) { console.error(e); }
 }
 
@@ -810,15 +812,15 @@ function normalizePhone(raw) { return raw.replace(/\D/g, ''); }
 
 function findStudentName(phone) {
     const clean = normalizePhone(phone);
+    // חפש ב-Keys — הכי אמין
+    const k = allKeysData.find(k => normalizePhone(k.phone) === clean);
+    if (k && k.name) return k.name;
     // חפש ב-Progress
-    let s = allProgressData.find(p => normalizePhone(p.phone) === clean);
-    if (s && s.name) return s.name;
+    const p = allProgressData.find(p => normalizePhone(p.phone) === clean);
+    if (p && p.name) return p.name;
     // חפש ב-Students
-    s = allStudentsData.find(p => normalizePhone(p.phone) === clean);
+    const s = allStudentsData.find(s => normalizePhone(s.phone) === clean);
     if (s) return ((s.firstName || '') + ' ' + (s.lastName || '')).trim();
-    // חפש ב-FinalExamHistory
-    s = allFinalExamHistory.find(p => normalizePhone(p.phone) === clean);
-    if (s && s.name) return s.name;
     return '';
 }
 
@@ -919,6 +921,8 @@ function generateKey() {
     return key;
 }
 
+let allKeysData = [];
+
 async function loadKeys() {
     const wrap = document.getElementById('keys-list-wrap');
     if (!wrap) return;
@@ -926,6 +930,7 @@ async function loadKeys() {
         const res = await fetch(GOOGLE_URL + '?action=getKeys');
         const text = await res.text();
         const keys = JSON.parse(text);
+        allKeysData = keys;
         renderKeysList(keys);
     } catch(e) {
         if (wrap) wrap.innerHTML = '<div style="color:var(--text-muted);padding:10px;">שגיאה בטעינת הסיסמאות.</div>';
