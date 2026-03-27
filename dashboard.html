@@ -808,11 +808,24 @@ function showFeedback(id, msg, type) {
 
 function normalizePhone(raw) { return raw.replace(/\D/g, ''); }
 
+function findStudentName(phone) {
+    const clean = normalizePhone(phone);
+    // חפש ב-Progress
+    let s = allProgressData.find(p => normalizePhone(p.phone) === clean);
+    if (s && s.name) return s.name;
+    // חפש ב-Students
+    s = allStudentsData.find(p => normalizePhone(p.phone) === clean);
+    if (s) return ((s.firstName || '') + ' ' + (s.lastName || '')).trim();
+    // חפש ב-FinalExamHistory
+    s = allFinalExamHistory.find(p => normalizePhone(p.phone) === clean);
+    if (s && s.name) return s.name;
+    return '';
+}
+
 async function adminUnlockAll() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
-    const student = allProgressData.find(p => normalizePhone(p.phone) === phone);
-    const name = student ? student.name : '';
+    const name = findStudentName(phone);
     try {
         await fetch(GOOGLE_URL + '?action=unlockChapters&phone=' + phone + '&name=' + encodeURIComponent(name));
         showFeedback('feedback-unlock', '✅ כל הפרקים נפתחו!', 'success');
@@ -823,8 +836,7 @@ async function adminUnlockAll() {
 async function adminOpenFinal() {
     const phone = normalizePhone(document.getElementById('admin-phone-unlock').value);
     if (!phone) { showFeedback('feedback-unlock', 'הזן מספר טלפון', 'error'); return; }
-    const student = allProgressData.find(p => normalizePhone(p.phone) === phone);
-    const name = student ? student.name : '';
+    const name = findStudentName(phone);
     try {
         await fetch(GOOGLE_URL + '?action=unlockFinal&phone=' + phone + '&name=' + encodeURIComponent(name));
         showFeedback('feedback-unlock', '✅ מבחן מסכם נפתח בלבד!', 'success');
