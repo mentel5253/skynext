@@ -960,7 +960,7 @@ function renderKeysList(keys) {
 }
 
 function sendKeyWhatsApp(phone, key, name) {
-    const msg = `שלום ${name}! ✈️\n\n*SkyNext* — מערכת הכנה לבחינת כטב"מ\n\nקוד הגישה שלך — העתק והדבק בכניסה למערכת:\n\n${key}\n\nhttps://www.skynext.co.il\n\nבהצלחה! 💪`;
+    const msg = `שלום ${name}! ✈️\n\n*SkyNext* — מערכת הכנה לבחינת כטב"מ\n\nהרישיון שלך מוכן! לחץ כאן לכניסה ישירה למערכת:\nhttps://www.skynext.co.il/?key=${key}\n\nאו היכנס ידנית דרך האתר:\nhttps://www.skynext.co.il\n\nבהצלחה! 💪`;
     const url = 'https://wa.me/972' + phone.replace(/^0/, '') + '?text=' + encodeURIComponent(msg);
     window.open(url, '_blank');
 }

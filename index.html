@@ -705,6 +705,14 @@
         if(localStorage.getItem('skynext_phone')) document.getElementById('phone').value = localStorage.getItem('skynext_phone');
         if(localStorage.getItem('skynext_email')) document.getElementById('email').value = localStorage.getItem('skynext_email');
         if(localStorage.getItem('skynext_license')) document.getElementById('license-key').value = localStorage.getItem('skynext_license');
+        // מילוי אוטומטי מקישור וואטסאפ (?key=XXXX)
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyFromUrl = urlParams.get('key');
+        if (keyFromUrl) {
+            document.getElementById('license-key').value = keyFromUrl;
+            document.getElementById('license-key').style.background = '#e8f5e9';
+            document.getElementById('license-key').style.borderColor = '#2ecc71';
+        }
     };
 
     async function verifyAndProceed() {
