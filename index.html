@@ -539,6 +539,71 @@
     const FINAL_PASS = 70;
     const FINAL_TOTAL = 33;
     const EXAM_STORAGE_KEY = 'skynext_exam_state';
+    const QUESTIONS_PER_CHAPTER = 25;
+
+    let subtopicHistory = {};
+
+    function buildSmartExam(chapterName) {
+        const chapterQs = allQuestions.filter(q => q.chapter === chapterName);
+        if (chapterQs.length <= QUESTIONS_PER_CHAPTER) return shuffle(chapterQs);
+
+        const subtopicScores = {};
+        chapterQs.forEach(q => {
+            const st = q.subtopic || 'כללי';
+            if (!subtopicScores[st]) subtopicScores[st] = { correct: 0, total: 0 };
+        });
+
+        if (subtopicHistory[chapterName]) {
+            Object.entries(subtopicHistory[chapterName]).forEach(([st, data]) => {
+                if (subtopicScores[st]) subtopicScores[st] = data;
+            });
+        }
+
+        const weak = [], mid = [], strong = [];
+        Object.entries(subtopicScores).forEach(([st, data]) => {
+            const score = data.total > 0 ? (data.correct / data.total) * 100 : 50;
+            if (score < 70) weak.push(st);
+            else if (score <= 90) mid.push(st);
+            else strong.push(st);
+        });
+
+        const nWeak   = Math.round(QUESTIONS_PER_CHAPTER * 0.40);
+        const nMid    = Math.round(QUESTIONS_PER_CHAPTER * 0.35);
+        const nStrong = QUESTIONS_PER_CHAPTER - nWeak - nMid;
+
+        function pickFrom(subtopics, count) {
+            if (!subtopics.length || count === 0) return [];
+            const pool = shuffle(chapterQs.filter(q => subtopics.includes(q.subtopic || 'כללי')));
+            return pool.slice(0, count);
+        }
+
+        if (Object.values(subtopicScores).every(s => s.total === 0)) {
+            return shuffle(chapterQs).slice(0, QUESTIONS_PER_CHAPTER);
+        }
+
+        let selected = [];
+        selected.push(...pickFrom(weak,   nWeak));
+        selected.push(...pickFrom(mid,    nMid));
+        selected.push(...pickFrom(strong, nStrong));
+
+        if (selected.length < QUESTIONS_PER_CHAPTER) {
+            const ids = new Set(selected.map(q => q.q));
+            const extra = shuffle(chapterQs.filter(q => !ids.has(q.q)));
+            selected.push(...extra.slice(0, QUESTIONS_PER_CHAPTER - selected.length));
+        }
+
+        return shuffle(selected.slice(0, QUESTIONS_PER_CHAPTER));
+    }
+
+    function updateSubtopicHistory(chapter, questionsArr, answersArr) {
+        if (!subtopicHistory[chapter]) subtopicHistory[chapter] = {};
+        questionsArr.forEach((q, i) => {
+            const st = q.subtopic || 'כללי';
+            if (!subtopicHistory[chapter][st]) subtopicHistory[chapter][st] = { correct: 0, total: 0 };
+            subtopicHistory[chapter][st].total++;
+            if (answersArr[i] === q.c) subtopicHistory[chapter][st].correct++;
+        });
+    }
 
     let user = {};
     let examStarted = false;
@@ -594,20 +659,9 @@
     }
 
     // ===== שמירת מצב מבחן =====
-    function saveExamState() {
-        if (!examStarted || isReviewMode) return;
-        const state = {
-            chapter: currentChapter,
-            questions: questions,
-            answers: answers,
-            current: current,
-            timeLeft: timeLeft,
-            examStartTime: examStartTime,
-            userPhone: user.phone,
-            savedAt: Date.now()
-        };
-        localStorage.setItem(EXAM_STORAGE_KEY, JSON.stringify(state));
-    }
+    function saveExamState() { return; } // שמירה מבוטלת לחלוטין
+    function loadExamState() { return null; }
+    function clearExamState() { localStorage.removeItem(EXAM_STORAGE_KEY); }
 
     function loadExamState() {
         try {
@@ -924,21 +978,14 @@
     }
 
     async function startChapter(chapterName) {
-        if (!isReviewMode) {
-            const savedState = loadExamState();
-            if (savedState && savedState.chapter) {
-                const cont = await showConfirm(`יש מבחן שמור של "${savedState.chapter}".\nהתחלת מבחן חדש תמחק אותו. להמשיך?`);
-                if (!cont) return;
-                clearExamState();
-            }
-        }
+        clearExamState();
         currentChapter = chapterName;
         isReviewMode = false;
         let filtered;
         if (chapterName === 'מבחן מסכם') {
             filtered = buildFinalExam();
         } else {
-            filtered = shuffle(allQuestions.filter(q => q.chapter === chapterName));
+            filtered = buildSmartExam(chapterName);
         }
         if (!filtered || filtered.length === 0) {
             await showAlert(`לא נמצאו שאלות לפרק "${chapterName}". בדוק שהשאלות מסומנות נכון בגיליון.`);
@@ -1157,6 +1204,7 @@
             if (currentChapter !== 'מבחן מסכם') {
                 fetch(`${GOOGLE_URL}?action=saveProgress&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&chapter=${encodeURIComponent(currentChapter)}&score=${score}`);
                 if (score > (progress[currentChapter] || 0)) progress[currentChapter] = score;
+                updateSubtopicHistory(currentChapter, questions, answers);
             } else {
                 fetch(`${GOOGLE_URL}?action=saveFinalExamScore&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&score=${score}`);
             }
