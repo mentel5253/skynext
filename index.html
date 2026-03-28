@@ -663,26 +663,7 @@
     function loadExamState() { return null; }
     function clearExamState() { localStorage.removeItem(EXAM_STORAGE_KEY); }
 
-    function loadExamState() {
-        try {
-            const raw = localStorage.getItem(EXAM_STORAGE_KEY);
-            if (!raw) return null;
-            const state = JSON.parse(raw);
-            if (Date.now() - state.savedAt > 4 * 3600 * 1000) { clearExamState(); return null; }
-            if (state.userPhone && user.phone && state.userPhone !== user.phone) { clearExamState(); return null; }
-            return state;
-        } catch(e) { return null; }
-    }
-
-    function clearExamState() { localStorage.removeItem(EXAM_STORAGE_KEY); }
-
-    window.addEventListener('beforeunload', function(e) {
-        if (examStarted && !isReviewMode) {
-            saveExamState();
-            e.preventDefault();
-            e.returnValue = 'המבחן עדיין פעיל. התשובות שלך נשמרו — תוכל להמשיך בכניסה הבאה.';
-        }
-    });
+    // שמירת מצב בוטלה — אין beforeunload
 
     document.addEventListener('keydown', function(e) {
         if (examStarted && !isReviewMode) {
@@ -794,16 +775,8 @@
                 buildWatermark(user.name, user.phone);
                 document.getElementById('main-drone').classList.add('drone-observation');
                 await loadAllData();
-                const savedState = loadExamState();
-                if (savedState && savedState.chapter) {
-                    hideAllPages();
-                    document.getElementById('page-exam').classList.remove('hidden');
-                    document.getElementById('resume-banner').style.display = 'flex';
-                    document.getElementById('exam-chapter-badge').innerText = savedState.chapter === 'מבחן מסכם' ? '🏆 מבחן מסכם סופי' : `📚 ${savedState.chapter}`;
-                } else {
-                    hideAllPages();
-                    document.getElementById('page-instructions').classList.remove('hidden');
-                }
+                hideAllPages();
+                document.getElementById('page-instructions').classList.remove('hidden');
             } else {
                 await showAlert("קוד רישיון לא תקין או פג תוקף.");
             }
