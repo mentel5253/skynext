@@ -1193,20 +1193,49 @@
         document.getElementById('res-chapter-badge').innerText = currentChapter === 'מבחן מסכם' ? '🏆 מבחן מסכם סופי' : `📚 ${currentChapter}`;
         document.getElementById('res-name').innerText = user.name;
         document.getElementById('res-score').innerText = score + "%";
-        document.getElementById('res-score').style.color = passed ? "#2ecc71" : "#e74c3c";
         const resMsg = document.getElementById('res-message');
         const passMsg = document.getElementById('res-pass-msg');
         const retryBtn = document.getElementById('btn-retry');
-        if (passed) {
-            resMsg.innerHTML = currentChapter === 'מבחן מסכם' ? "🎉 מזל טוב! עברת את המבחן המסכם בהצלחה!" : `✅ כל הכבוד! עברת את פרק "${currentChapter}"!`;
-            resMsg.style.color = "#2ecc71";
-            passMsg.innerHTML = currentChapter === 'מבחן מסכם' ? `<span style="color:#2ecc71; font-weight:bold;">אתה מוכן לבחינה האמיתית ברת"א! ✈️</span>` : `<span style="color:#2ecc71;">הפרק הבא נפתח! חזור לתפריט.</span>`;
-            retryBtn.classList.add('hidden');
+
+        if (currentChapter === 'מבחן מסכם') {
+            // מבחן מסכם — רק עובר/נכשל
+            if (passed) {
+                document.getElementById('res-score').style.color = "#2ecc71";
+                resMsg.innerHTML = "🎉 מזל טוב! עברת את המבחן המסכם בהצלחה!";
+                resMsg.style.color = "#2ecc71";
+                passMsg.innerHTML = `<span style="color:#2ecc71; font-weight:bold;">אתה מוכן לבחינה האמיתית ברת"א! ✈️</span>`;
+                retryBtn.classList.add('hidden');
+            } else {
+                document.getElementById('res-score').style.color = "#e74c3c";
+                resMsg.innerHTML = `לא עברת הפעם. נדרש ${passScore}% לפחות.`;
+                resMsg.style.color = "#e74c3c";
+                passMsg.innerHTML = `<span style="color:#e74c3c;">חזור ולמד שוב — אתה יכול! 💪</span>`;
+                retryBtn.classList.remove('hidden');
+            }
         } else {
-            resMsg.innerHTML = `לא עברת הפעם. נדרש ${passScore}% לפחות.`;
-            resMsg.style.color = "#e74c3c";
-            passMsg.innerHTML = `<span style="color:#e74c3c;">חזור ולמד שוב — אתה יכול! 💪</span>`;
-            retryBtn.classList.remove('hidden');
+            // פרקי תרגול — 3 רמות
+            if (score < 70) {
+                // אדום — נכשל
+                document.getElementById('res-score').style.color = "#e74c3c";
+                resMsg.innerHTML = `😕 לא עברת הפעם.`;
+                resMsg.style.color = "#e74c3c";
+                passMsg.innerHTML = `<span style="color:#e74c3c;">נדרש ציון 70 לפחות — חזור ותתאמן שוב! 💪</span>`;
+                retryBtn.classList.remove('hidden');
+            } else if (score < 90) {
+                // כתום — עבר אך לא מספיק
+                document.getElementById('res-score').style.color = "#f39c12";
+                resMsg.innerHTML = `👍 עברת, אך בשביל לעבור את הפרק נדרש ציון 90 ומעלה.`;
+                resMsg.style.color = "#f39c12";
+                passMsg.innerHTML = `<span style="color:#f39c12;">המשך להתאמן — אתה בדרך הנכונה!</span>`;
+                retryBtn.classList.remove('hidden');
+            } else {
+                // ירוק — תותח
+                document.getElementById('res-score').style.color = "#2ecc71";
+                resMsg.innerHTML = `🎯 אתה תותח!`;
+                resMsg.style.color = "#2ecc71";
+                passMsg.innerHTML = `<span style="color:#2ecc71; font-weight:bold;">אתה רשאי לעבור לפרק הבא! ✈️</span>`;
+                retryBtn.classList.add('hidden');
+            }
         }
     }
 
