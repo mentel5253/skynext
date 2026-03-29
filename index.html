@@ -891,15 +891,10 @@
         btn.onclick = null;
 
         const finalFlag = progress['מבחן מסכם'];
-        // אם flag קיים (לא undefined/null) — הוא גובר על הפרקים
-        // flag = -1 → נעול, flag >= 0 → פתוח
-        // אם flag לא קיים כלל — מסתמכים על הפרקים
-        let isOpen;
-        if (finalFlag !== undefined && finalFlag !== null) {
-            isOpen = finalFlag >= 0;
-        } else {
-            isOpen = allChaptersPassed;
-        }
+        // allChaptersPassed גובר תמיד — אם עבר כל הפרקים המבחן נפתח
+        // flag = -1 → נעול (רק אם לא עבר פרקים)
+        // flag >= 0 → פתוח (ניגש בעבר)
+        let isOpen = allChaptersPassed || (finalFlag !== undefined && finalFlag !== null && finalFlag >= 0);
 
         if (isOpen) {
             btn.classList.add('active');
