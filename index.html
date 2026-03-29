@@ -1008,8 +1008,20 @@
 
             if (isReviewMode) {
                 // ===== מצב סקירה (לאחר הגשה) =====
-                if (i === q.c) btn.style.background = "#d4edda";
-                if (answers[current] === i && i !== q.c) btn.style.background = "#f8d7da";
+                if (currentChapter === 'מבחן מסכם') {
+                    // מבחן מסכם — ירוק/אדום/אפור
+                    if (i === q.c) {
+                        btn.style.cssText = "background:#28a745 !important; color:white !important; font-weight:bold; border-color:#28a745;";
+                    } else if (answers[current] === i) {
+                        btn.style.cssText = "background:#dc3545 !important; color:white !important; font-weight:bold; border-color:#dc3545;";
+                    } else {
+                        btn.style.cssText = "background:#f0f0f0 !important; color:#999 !important; border-color:#ddd;";
+                    }
+                } else {
+                    // פרקי תרגול — כמו שהיה
+                    if (i === q.c) btn.style.background = "#d4edda";
+                    if (answers[current] === i && i !== q.c) btn.style.background = "#f8d7da";
+                }
                 btn.disabled = true;
 
             } else if (liveLearn && alreadyAnswered) {
@@ -1135,8 +1147,8 @@
     function renderDots() {
         const nav = document.getElementById('dots-nav');
         nav.innerHTML = '';
-        // הצג צבעים בסקירה (לאחר הגשה) — רק בפרקים לא במבחן מסכם
-        const showReviewColors = isReviewMode && currentChapter !== 'מבחן מסכם';
+        // הצג צבעים בסקירה (לאחר הגשה) — בפרקים ובמבחן מסכם
+        const showReviewColors = isReviewMode;
         // הצג צבעים בלמידה חיה — לכל שאלה שנענתה
         const showLiveColors = isLiveLearnMode();
 
