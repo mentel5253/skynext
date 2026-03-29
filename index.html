@@ -1178,6 +1178,7 @@
                 fetch(`${GOOGLE_URL}?action=saveProgress&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&chapter=${encodeURIComponent(currentChapter)}&score=${score}`);
                 if (score > (progress[currentChapter] || 0)) progress[currentChapter] = score;
                 updateSubtopicHistory(currentChapter, questions, answers);
+                updateChapterButtons(); // רענן כפתורים — כולל פתיחת מבחן מסכם אם כל הפרקים עברו
             } else {
                 fetch(`${GOOGLE_URL}?action=saveFinalExamScore&phone=${encodeURIComponent(user.phone)}&name=${encodeURIComponent(user.name)}&score=${score}`);
             }
